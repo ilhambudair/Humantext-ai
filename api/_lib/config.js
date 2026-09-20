@@ -9,12 +9,12 @@ const int = (v, d, min, max) => {
 export function getConfig(env = process.env) {
   return {
     apiKey: (env.GEMINI_API_KEY || "").trim(),
-apiUrl: "https://generativelanguage.googleapis.com",
-apiVersion: "v1beta",
+    apiUrl: "https://generativelanguage.googleapis.com",
+    apiVersion: "v1beta",
 
-models: {
-  default: (env.GEMINI_MODEL || "gemini-2.5-flash-lite").trim(),
-  fast: (env.GEMINI_MODEL_FAST || "gemini-2.5-flash-lite").trim()
+    models: {
+      default: (env.GEMINI_MODEL || "gemini-3.5-flash-lite").trim(),
+      fast: (env.GEMINI_MODEL_FAST || "gemini-3.5-flash-lite").trim(),
     },
     maxOutputTokens: int(env.MAX_OUTPUT_TOKENS, 4096, 256, 16000),
     maxPromptBytes: int(env.MAX_PROMPT_BYTES, 62000, 1000, 200000),
@@ -23,6 +23,9 @@ models: {
     // Optional shared secret that visitors must type before AI features work.
     accessCode: (env.AI_ACCESS_CODE || "").trim(),
     // Optional comma-separated list of allowed browser origins. Empty = same origin only.
-    allowedOrigins: (env.ALLOWED_ORIGINS || "").split(",").map(s => s.trim()).filter(Boolean)
+    allowedOrigins: (env.ALLOWED_ORIGINS || "")
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean),
   };
 }
