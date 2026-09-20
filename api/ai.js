@@ -12,7 +12,7 @@
 
 import { getConfig } from "./_lib/config.js";
 import { readJsonBody, clientIp, rateLimit, originAllowed, safeEqual } from "./_lib/security.js";
-import { streamCompletion, UpstreamError } from "./_lib/anthropic.js";
+import { streamCompletion, UpstreamError } from "./_lib/gemini.js";
 
 const TIERS = new Set(["default", "fast"]);
 const STATUS = { rate_limited: 429, prompt_too_large: 413, refused: 422, empty_completion: 502, upstream_error: 502 };

@@ -8,13 +8,13 @@ const int = (v, d, min, max) => {
 
 export function getConfig(env = process.env) {
   return {
-    apiKey: (env.ANTHROPIC_API_KEY || "").trim(),
-    apiUrl: (env.ANTHROPIC_API_URL || "https://api.anthropic.com/v1/messages").trim(),
-    apiVersion: (env.ANTHROPIC_VERSION || "2023-06-01").trim(),
-    // The frontend asks for a "tier"; the server decides which model that means.
-    models: {
-      default: (env.ANTHROPIC_MODEL || "claude-sonnet-5").trim(),
-      fast: (env.ANTHROPIC_MODEL_FAST || "claude-haiku-4-5-20251001").trim()
+    apiKey: (env.GEMINI_API_KEY || "").trim(),
+apiUrl: "https://generativelanguage.googleapis.com",
+apiVersion: "v1beta",
+
+models: {
+  default: (env.GEMINI_MODEL || "gemini-2.5-flash-lite").trim(),
+  fast: (env.GEMINI_MODEL_FAST || "gemini-2.5-flash-lite").trim()
     },
     maxOutputTokens: int(env.MAX_OUTPUT_TOKENS, 4096, 256, 16000),
     maxPromptBytes: int(env.MAX_PROMPT_BYTES, 62000, 1000, 200000),
