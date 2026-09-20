@@ -1,0 +1,2868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HumanText AI — Write naturally. Understand clearly.</title>
+<meta name="description" content="An AI writing assistant for analyzing, improving, and personalizing your writing.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,300..600;1,7..72,400&family=Spline+Sans:wght@300..700&display=swap" rel="stylesheet">
+<style>
+/* ---------- tokens ---------- */
+:root{
+  --bg:#E8EAE4;
+  --surface:#FBFBF8;
+  --surface-2:#F1F3ED;
+  --ink:#16262A;
+  --ink-2:#465A5E;
+  --ink-3:#74888C;
+  --rule:#D4D9CF;
+  --rule-strong:#B8C0B4;
+  --blue:#27478F;
+  --blue-soft:#DDE3F4;
+  --red:#AE3A2E;
+  --red-soft:#F4DFDB;
+  --amber:#8F6210;
+  --amber-soft:#F0E5CB;
+  --green:#2C6A4D;
+  --green-soft:#DCEAE0;
+  --sel:#C9D4EF;
+  --r-panel:14px;
+  --r-ctl:8px;
+  --font-display:"Literata","Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --font-ui:"Spline Sans","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --maxw:1240px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1517;--surface:#151E21;--surface-2:#1B262A;--ink:#E6EBE6;--ink-2:#A8B7B8;--ink-3:#7C8D8F;
+    --rule:#253337;--rule-strong:#35474C;--blue:#93ADF2;--blue-soft:#1D2A47;--red:#E8887A;--red-soft:#3A2220;
+    --amber:#DDB05A;--amber-soft:#382C15;--green:#7FC79E;--green-soft:#16301F;--sel:#2A3A5E;color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1517;--surface:#151E21;--surface-2:#1B262A;--ink:#E6EBE6;--ink-2:#A8B7B8;--ink-3:#7C8D8F;
+  --rule:#253337;--rule-strong:#35474C;--blue:#93ADF2;--blue-soft:#1D2A47;--red:#E8887A;--red-soft:#3A2220;
+  --amber:#DDB05A;--amber-soft:#382C15;--green:#7FC79E;--green-soft:#16301F;--sel:#2A3A5E;color-scheme:dark;
+}
+
+/* ---------- base ---------- */
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--font-ui);font-size:16px;line-height:1.6;font-weight:400;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--sel);color:var(--ink)}
+h1,h2,h3,h4{margin:0;font-weight:500;line-height:1.15;letter-spacing:-.015em}
+h1,h2{font-family:var(--font-display)}
+p{margin:0 0 1em}
+a{color:var(--blue);text-decoration-thickness:1px;text-underline-offset:3px}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:4px}
+img,svg{max-width:100%}
+hr{border:0;border-top:1px solid var(--rule);margin:2rem 0}
+.mono-num{font-variant-numeric:tabular-nums}
+
+/* ---------- shell ---------- */
+.shell{min-height:100vh;display:flex;flex-direction:column}
+.topbar{
+  position:sticky;top:0;z-index:40;background:var(--bg);
+  border-bottom:1px solid var(--rule);
+}
+.topbar-in{max-width:var(--maxw);margin:0 auto;padding:.7rem 1.25rem;display:flex;align-items:center;gap:1rem}
+.brand{display:flex;align-items:baseline;gap:.55rem;cursor:pointer;background:none;border:0;padding:0;color:inherit;font:inherit}
+.brand b{font-family:var(--font-display);font-size:1.18rem;font-weight:600;letter-spacing:-.02em}
+.brand span{font-size:.76rem;color:var(--ink-3);letter-spacing:.01em}
+.topbar-sp{flex:1}
+.theme-btn{
+  display:inline-flex;align-items:center;gap:.4rem;border:1px solid var(--rule-strong);background:var(--surface);
+  color:var(--ink-2);border-radius:999px;padding:.32rem .8rem;font:inherit;font-size:.82rem;cursor:pointer;
+}
+.theme-btn:hover{color:var(--ink);border-color:var(--ink-3)}
+
+.body-grid{max-width:var(--maxw);margin:0 auto;width:100%;flex:1;display:grid;grid-template-columns:200px minmax(0,1fr);gap:2.25rem;padding:1.75rem 1.25rem 4rem}
+.rail{position:sticky;top:64px;align-self:start}
+.rail ul{list-style:none;margin:0;padding:0}
+.rail li{margin:0}
+.rail button{
+  width:100%;text-align:left;background:none;border:0;padding:.46rem 0 .46rem .85rem;font:inherit;font-size:.95rem;
+  color:var(--ink-2);cursor:pointer;border-left:2px solid transparent;line-height:1.4;
+}
+.rail button:hover{color:var(--ink)}
+.rail button[aria-current="page"]{color:var(--ink);font-weight:600;border-left-color:var(--blue)}
+.rail .rail-note{margin-top:1.5rem;padding-left:.85rem;border-left:2px solid var(--rule);font-size:.78rem;color:var(--ink-3);line-height:1.5}
+
+main{min-width:0}
+.page{display:none}
+.page.is-active{display:block}
+.page-head{margin-bottom:1.5rem}
+.page-head h1{font-size:1.95rem;margin-bottom:.35rem}
+.page-head p{color:var(--ink-2);max-width:62ch;margin:0}
+
+/* ---------- panels ---------- */
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:var(--r-panel);padding:1.35rem}
+.panel + .panel{margin-top:1.25rem}
+.panel-title{font-family:var(--font-ui);font-size:1rem;font-weight:600;letter-spacing:0;margin-bottom:.15rem}
+.panel-sub{color:var(--ink-3);font-size:.85rem;margin:0 0 1rem}
+
+/* ---------- controls ---------- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.45rem;
+  font:inherit;font-size:.92rem;font-weight:500;line-height:1;
+  padding:.65rem 1.05rem;border-radius:var(--r-ctl);border:1px solid var(--rule-strong);
+  background:var(--surface);color:var(--ink);cursor:pointer;
+}
+.btn:hover{border-color:var(--ink-3)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-primary{background:var(--blue);border-color:var(--blue);color:#fff}
+:root[data-theme="dark"] .btn-primary{color:#0E1517}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn-primary{color:#0E1517}}
+.btn-primary:hover{filter:brightness(1.07);border-color:var(--blue)}
+.btn-quiet{border-color:transparent;background:transparent;color:var(--ink-2);padding-inline:.6rem}
+.btn-quiet:hover{background:var(--surface-2);color:var(--ink);border-color:transparent}
+.btn-sm{font-size:.83rem;padding:.44rem .7rem}
+.btn-row{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}
+
+select,input[type=text],textarea{
+  font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--rule-strong);
+  border-radius:var(--r-ctl);padding:.5rem .6rem;
+}
+select{cursor:pointer}
+.field{display:block;margin-bottom:1rem}
+.field > span{display:block;font-size:.85rem;font-weight:600;margin-bottom:.3rem}
+.field small{display:block;color:var(--ink-3);font-size:.8rem;margin-top:.3rem}
+
+.switch{display:flex;gap:.75rem;align-items:flex-start;padding:.85rem 0;border-bottom:1px solid var(--rule)}
+.switch:last-of-type{border-bottom:0}
+.switch input{margin:.28rem 0 0;width:1.05rem;height:1.05rem;accent-color:var(--blue);flex:none}
+.switch div{flex:1}
+.switch strong{display:block;font-weight:600;font-size:.94rem}
+.switch small{color:var(--ink-3);font-size:.83rem;line-height:1.5}
+
+.seg{display:inline-flex;border:1px solid var(--rule-strong);border-radius:999px;padding:3px;background:var(--surface-2);gap:2px}
+.seg button{font:inherit;font-size:.83rem;border:0;background:none;color:var(--ink-2);padding:.32rem .8rem;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+
+/* ---------- editor ---------- */
+.editor-wrap{background:var(--surface);border:1px solid var(--rule);border-radius:var(--r-panel);overflow:hidden}
+.editor-wrap:focus-within{border-color:var(--blue)}
+#editor{
+  display:block;width:100%;min-height:290px;resize:vertical;border:0;border-radius:0;background:transparent;
+  padding:1.25rem 1.35rem;font-family:var(--font-display);font-size:1.02rem;line-height:1.72;
+}
+#editor:focus{outline:none}
+#editor::placeholder{color:var(--ink-3)}
+.editor-bar{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem 1.1rem;border-top:1px solid var(--rule);background:var(--surface-2);padding:.6rem 1.1rem}
+.counts{display:flex;flex-wrap:wrap;gap:.2rem 1.1rem;font-size:.82rem;color:var(--ink-3)}
+.counts b{font-weight:600;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.editor-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-left:auto}
+
+/* ---------- verdict ---------- */
+.verdict{display:grid;grid-template-columns:auto minmax(0,1fr);gap:1.75rem;align-items:center}
+.ring{position:relative;width:148px;height:148px;flex:none}
+.ring svg{transform:rotate(-90deg)}
+.ring-val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.05rem}
+.ring-val b{font-family:var(--font-display);font-size:2.45rem;font-weight:400;line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.ring-val small{font-size:.72rem;color:var(--ink-3)}
+.band{display:inline-flex;align-items:center;gap:.5rem;border-radius:999px;padding:.3rem .8rem;font-size:.85rem;font-weight:600;border:1px solid}
+.band-dot{width:.55rem;height:.55rem;border-radius:50%;background:currentColor;flex:none}
+.band.low{color:var(--green);background:var(--green-soft);border-color:var(--green)}
+.band.mid{color:var(--amber);background:var(--amber-soft);border-color:var(--amber)}
+.band.high{color:var(--red);background:var(--red-soft);border-color:var(--red)}
+.verdict h2{font-size:1.5rem;margin:.55rem 0 .4rem}
+.verdict p{color:var(--ink-2);margin:0;max-width:52ch;font-size:.94rem}
+
+/* ---------- metrics ---------- */
+.metrics{display:grid;gap:1.15rem}
+.metric-name{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;font-size:.92rem;margin-bottom:.35rem}
+.metric-name b{font-weight:600}
+.metric-name i{font-style:normal;font-variant-numeric:tabular-nums;color:var(--ink-2);font-weight:600}
+.track{height:7px;border-radius:999px;background:var(--surface-2);border:1px solid var(--rule);overflow:hidden}
+.fill{height:100%;background:var(--blue);border-radius:999px}
+.fill.g{background:var(--green)}.fill.a{background:var(--amber)}.fill.r{background:var(--red)}
+.metric-note{font-size:.81rem;color:var(--ink-3);margin-top:.3rem}
+
+/* ---------- factors ---------- */
+.factors{list-style:none;margin:0;padding:0}
+.factors li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:.85rem;padding:.8rem 0;border-bottom:1px solid var(--rule)}
+.factors li:last-child{border-bottom:0}
+.factors li:first-child{padding-top:0}
+.tag{font-size:.7rem;font-weight:600;border-radius:4px;padding:.2rem .45rem;border:1px solid;white-space:nowrap;height:fit-content;margin-top:.12rem}
+.tag.up{color:var(--red);border-color:var(--red);background:var(--red-soft)}
+.tag.down{color:var(--green);border-color:var(--green);background:var(--green-soft)}
+.factors strong{display:block;font-weight:600;font-size:.94rem}
+.factors span{color:var(--ink-2);font-size:.87rem}
+
+/* ---------- stats & rhythm ---------- */
+.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:10px;overflow:hidden}
+.statgrid div{background:var(--surface);padding:.75rem .85rem}
+.statgrid b{display:block;font-family:var(--font-display);font-size:1.3rem;font-weight:400;font-variant-numeric:tabular-nums;line-height:1.2}
+.statgrid small{color:var(--ink-3);font-size:.78rem}
+
+.rhythm{display:flex;flex-direction:column;gap:3px}
+.rbar{display:grid;grid-template-columns:2.1rem minmax(0,1fr);gap:.6rem;align-items:center}
+.rbar em{font-style:normal;font-size:.72rem;color:var(--ink-3);text-align:right;font-variant-numeric:tabular-nums}
+.rbar i{display:block;height:9px;border-radius:2px;background:var(--blue);opacity:.78;min-width:2px}
+.rhythm-legend{display:flex;gap:1.1rem;flex-wrap:wrap;font-size:.8rem;color:var(--ink-3);margin-top:.8rem}
+
+/* ---------- notices ---------- */
+.notice{border:1px solid var(--rule-strong);border-left:3px solid var(--ink-3);background:var(--surface-2);border-radius:10px;padding:.9rem 1rem;font-size:.87rem;color:var(--ink-2)}
+.notice strong{color:var(--ink)}
+.notice.warn{border-left-color:var(--amber);background:var(--amber-soft);color:var(--ink)}
+.notice.err{border-left-color:var(--red);background:var(--red-soft);color:var(--ink)}
+.notice + .notice{margin-top:.75rem}
+
+.empty{border:1px dashed var(--rule-strong);border-radius:var(--r-panel);padding:2.5rem 1.5rem;text-align:center;color:var(--ink-3)}
+.empty strong{display:block;color:var(--ink);font-size:1.05rem;font-weight:600;margin-bottom:.35rem;font-family:var(--font-display)}
+
+/* ---------- styles picker ---------- */
+.styles{display:grid;grid-template-columns:repeat(auto-fit,minmax(196px,1fr));gap:.65rem}
+.style-opt{position:relative;display:block;border:1px solid var(--rule-strong);border-radius:10px;padding:.8rem .9rem;cursor:pointer;background:var(--surface)}
+.style-opt input{position:absolute;opacity:0;pointer-events:none}
+.style-opt strong{display:block;font-size:.93rem;font-weight:600;margin-bottom:.15rem}
+.style-opt small{color:var(--ink-3);font-size:.8rem;line-height:1.45;display:block}
+.style-opt:hover{border-color:var(--ink-3)}
+.style-opt:has(input:checked),.style-opt.is-sel{border-color:var(--blue);box-shadow:inset 0 0 0 1px var(--blue);background:var(--blue-soft)}
+.style-opt:has(input:focus-visible){outline:2px solid var(--blue);outline-offset:2px}
+
+/* ---------- compare ---------- */
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.col{background:var(--surface);border:1px solid var(--rule);border-radius:var(--r-panel);display:flex;flex-direction:column;min-width:0}
+.col-head{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.7rem 1rem;border-bottom:1px solid var(--rule)}
+.col-head h3{font-size:.92rem;font-weight:600;font-family:var(--font-ui);letter-spacing:0}
+.col-head small{color:var(--ink-3);font-size:.78rem;font-variant-numeric:tabular-nums}
+.doc{padding:1.1rem;font-family:var(--font-display);font-size:.97rem;line-height:1.75;white-space:pre-wrap;overflow-wrap:break-word;max-height:540px;overflow-y:auto;flex:1}
+.doc:empty::before{content:"Nothing here yet.";color:var(--ink-3);font-family:var(--font-ui);font-size:.9rem}
+mark.ins{background:var(--blue-soft);color:var(--ink);border-radius:3px;padding:.05em .12em;box-shadow:inset 0 -1px 0 var(--blue)}
+del.del{background:var(--red-soft);color:var(--ink-2);border-radius:3px;padding:.05em .12em;text-decoration:line-through;text-decoration-color:var(--red)}
+.diff-legend{display:flex;gap:1rem;flex-wrap:wrap;font-size:.8rem;color:var(--ink-3);align-items:center}
+.swatch{display:inline-block;width:.8rem;height:.8rem;border-radius:3px;vertical-align:-1px;margin-right:.3rem}
+
+/* ---------- history ---------- */
+.hist{list-style:none;margin:0;padding:0}
+.hist li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:1rem;align-items:center;padding:.95rem 0;border-bottom:1px solid var(--rule)}
+.hist li:last-child{border-bottom:0}
+.hist-meta{display:flex;flex-wrap:wrap;gap:.35rem .85rem;font-size:.8rem;color:var(--ink-3);margin-top:.3rem;align-items:center}
+.hist-prev{font-family:var(--font-display);color:var(--ink-2);font-size:.92rem;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill{font-size:.74rem;font-weight:600;border-radius:999px;padding:.12rem .5rem;border:1px solid}
+.pill.low{color:var(--green);border-color:var(--green);background:var(--green-soft)}
+.pill.mid{color:var(--amber);border-color:var(--amber);background:var(--amber-soft)}
+.pill.high{color:var(--red);border-color:var(--red);background:var(--red-soft)}
+
+/* ---------- home ---------- */
+.hero{padding:1.5rem 0 2.5rem;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:3rem;align-items:center}
+.hero h1{font-size:clamp(2.5rem,5.4vw,4rem);font-weight:400;line-height:1.02;letter-spacing:-.035em;margin-bottom:1.1rem}
+.hero p.lede{font-size:1.08rem;color:var(--ink-2);max-width:44ch;margin-bottom:1.6rem}
+.specimen{background:var(--surface);border:1px solid var(--rule);border-radius:var(--r-panel);padding:1.2rem}
+.specimen-head{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1rem;flex-wrap:wrap}
+.specimen-head p{margin:0;font-size:.86rem;color:var(--ink-3);max-width:34ch}
+.specimen-text{font-family:var(--font-display);font-size:.9rem;line-height:1.7;color:var(--ink-2);margin-top:1rem;padding-top:1rem;border-top:1px solid var(--rule)}
+.home-sec{padding:2.6rem 0;border-top:1px solid var(--rule)}
+.home-sec h2{font-size:1.65rem;margin-bottom:.6rem}
+.home-sec > p{color:var(--ink-2);max-width:64ch}
+.steps{list-style:none;margin:1.6rem 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:1.5rem}
+.steps li{padding-top:.8rem;border-top:2px solid var(--blue)}
+.steps b{display:block;font-family:var(--font-display);font-size:1.6rem;font-weight:300;color:var(--ink-3);line-height:1;margin-bottom:.5rem;font-variant-numeric:tabular-nums}
+.steps strong{display:block;font-weight:600;margin-bottom:.25rem}
+.steps span{color:var(--ink-2);font-size:.9rem}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;margin-top:1.4rem}
+.deflist{margin:0}
+.deflist dt{font-weight:600;font-size:.94rem;margin-top:.9rem}
+.deflist dd{margin:.15rem 0 0;color:var(--ink-2);font-size:.9rem}
+details.faq{border-bottom:1px solid var(--rule);padding:.9rem 0}
+details.faq summary{cursor:pointer;font-weight:600;font-size:.98rem;list-style:none;display:flex;justify-content:space-between;gap:1rem;align-items:center}
+details.faq summary::-webkit-details-marker{display:none}
+details.faq summary::after{content:"+";color:var(--ink-3);font-size:1.15rem;line-height:1}
+details.faq[open] summary::after{content:"\2013"}
+details.faq p{margin:.7rem 0 0;color:var(--ink-2);font-size:.92rem;max-width:70ch}
+
+.prose{max-width:68ch}
+.prose h2{font-size:1.4rem;margin:2rem 0 .6rem}
+.prose h3{font-size:1.02rem;margin:1.5rem 0 .35rem;font-family:var(--font-ui);font-weight:600}
+.prose p,.prose li{color:var(--ink-2)}
+.prose ul{padding-left:1.15rem}
+.prose li{margin-bottom:.35rem}
+
+.toast{position:fixed;left:50%;bottom:1.5rem;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:.6rem 1.1rem;border-radius:999px;font-size:.87rem;z-index:99;box-shadow:0 8px 24px -12px rgba(0,0,0,.6)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.spin{display:inline-block;width:.85em;height:.85em;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+
+/* ---------- v2 additions ---------- */
+.page.is-active{animation:pgin .22s ease-out}
+@keyframes pgin{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+textarea.ta{display:block;width:100%;resize:vertical;line-height:1.65;font-family:var(--font-display);font-size:1rem;padding:.75rem .9rem}
+textarea.ta:focus,input[type=text]:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px;border-color:var(--blue)}
+.field.caps > span{text-transform:uppercase;letter-spacing:.07em;font-size:.74rem;color:var(--ink-2)}
+.eyebrow{font-size:.78rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--blue);margin:0 0 .7rem}
+.hero-sub{margin:1.25rem 0 0;font-size:.88rem;color:var(--ink-3);max-width:46ch}
+.rail .rail-note strong{display:block;color:var(--ink-2);font-weight:600;margin-bottom:.1rem}
+.rail .rail-note ul{margin:.45rem 0 0;padding-left:1rem}
+.rail .rail-note li{margin:0 0 .25rem}
+.rail-note-m{display:none;font-size:.8rem;color:var(--ink-3);margin:.55rem 0 0}
+.toast{width:max-content;max-width:min(92vw,520px);text-align:center;border-radius:14px}
+.thinking{display:flex;align-items:center;gap:.6rem;color:var(--ink-2);font-size:.9rem}
+.subtle-h{font-size:.76rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);font-weight:600;margin:1.1rem 0 .4rem}
+.metric-name i small{font-size:.75em;font-weight:400;color:var(--ink-3)}
+
+/* feature cards */
+.ico svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem;margin-top:1.5rem}
+.feat{display:flex;flex-direction:column;align-items:flex-start;gap:.3rem;text-align:left;background:var(--surface);border:1px solid var(--rule);border-radius:var(--r-panel);padding:1.1rem 1.15rem 1.2rem;font:inherit;color:inherit;cursor:pointer;transition:border-color .15s,transform .15s,box-shadow .15s}
+.feat:hover{border-color:var(--ink-3);transform:translateY(-2px);box-shadow:0 10px 24px -18px rgba(0,0,0,.45)}
+.feat .ico{display:inline-flex;width:38px;height:38px;border-radius:10px;background:var(--blue-soft);color:var(--blue);align-items:center;justify-content:center;margin-bottom:.45rem}
+.feat strong{font-weight:600;font-size:1rem}
+.feat .d{color:var(--ink-2);font-size:.88rem;line-height:1.5}
+.banner{display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between;background:var(--blue-soft);border:1px solid var(--rule);border-radius:var(--r-panel);padding:1rem 1.25rem;margin-top:1.25rem}
+.banner p{margin:0;color:var(--ink);max-width:62ch;font-size:.94rem}
+
+/* rewriter controls */
+.ctrl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.1rem 1.75rem;margin-top:1.25rem;padding-top:1.1rem;border-top:1px solid var(--rule)}
+.ctrl-grid .field{margin:0}
+input[type=range]{width:100%;accent-color:var(--blue);margin:.15rem 0}
+.range-labels{display:flex;justify-content:space-between;font-size:.78rem;color:var(--ink-3)}
+.ctx-bar{display:flex;flex-wrap:wrap;gap:.5rem 1rem;align-items:center;justify-content:space-between;padding:.6rem 1.1rem;background:var(--amber-soft);border-bottom:1px solid var(--rule);font-size:.86rem;color:var(--ink)}
+.ctx-bar[hidden]{display:none}
+
+/* paragraph analysis */
+.para-list{display:grid;gap:.7rem}
+.para{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.5rem 1rem;align-items:center;border:1px solid var(--rule);border-radius:10px;padding:.85rem 1rem;background:var(--surface)}
+.para strong{font-weight:600;margin-right:.35rem}
+.para-meta{display:flex;flex-wrap:wrap;gap:.25rem .9rem;font-size:.82rem;color:var(--ink-2);margin-top:.3rem}
+.para-meta b{font-variant-numeric:tabular-nums}
+.para-prev{font-family:var(--font-display);font-size:.88rem;color:var(--ink-3);margin-top:.35rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.para-notes{font-size:.8rem;color:var(--ink-3);margin-top:.2rem}
+@media (max-width:560px){.para{grid-template-columns:1fr}}
+
+/* checklists and lists */
+.checks{list-style:none;margin:0;padding:0}
+.checks li{display:grid;grid-template-columns:5.6rem minmax(0,1fr);gap:.85rem;padding:.8rem 0;border-bottom:1px solid var(--rule)}
+.checks li:first-child{padding-top:0}
+.checks li:last-child{border-bottom:0;padding-bottom:0}
+.checks strong{display:block;font-weight:600;font-size:.93rem}
+.checks .c{color:var(--ink-2);font-size:.87rem}
+.tag.mid{color:var(--amber);border-color:var(--amber);background:var(--amber-soft)}
+.tag.na{color:var(--ink-3);border-color:var(--rule-strong);background:var(--surface-2)}
+.tag.w{text-align:center}
+.bullets{margin:.2rem 0 0;padding-left:1.15rem}
+.bullets li{margin-bottom:.4rem;color:var(--ink-2);font-size:.92rem}
+.where{display:inline-block;font-size:.72rem;font-weight:600;color:var(--blue);background:var(--blue-soft);border-radius:4px;padding:.08rem .4rem;margin-right:.4rem}
+
+/* student stepper */
+.stepper{list-style:none;margin:0 0 1.25rem;padding:0 0 .25rem;display:flex;gap:.4rem;overflow-x:auto}
+.stepper li{flex:1 0 auto}
+.stepper button{width:100%;display:flex;align-items:center;gap:.55rem;font:inherit;font-size:.85rem;background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:.5rem .75rem;color:var(--ink-3);cursor:default;white-space:nowrap}
+.stepper button b{display:inline-flex;width:1.4rem;height:1.4rem;border-radius:50%;align-items:center;justify-content:center;font-size:.74rem;border:1px solid var(--rule-strong);font-variant-numeric:tabular-nums}
+.stepper button.reach{color:var(--ink-2);cursor:pointer}
+.stepper button.reach:hover{border-color:var(--ink-3)}
+.stepper button.done b{background:var(--green-soft);border-color:var(--green);color:var(--green)}
+.stepper button.cur{color:var(--ink);border-color:var(--blue);box-shadow:inset 0 0 0 1px var(--blue);font-weight:600}
+.stepper button.cur b{background:var(--blue);border-color:var(--blue);color:var(--bg)}
+
+/* references */
+.ref-out{font-family:var(--font-display);font-size:.96rem;line-height:1.7}
+.ref-out p{margin:0 0 .8rem;padding-left:1.6rem;text-indent:-1.6rem}
+.ref-out em{font-style:italic}
+.ref-out mark{background:var(--amber-soft);color:var(--ink);border-radius:3px;padding:0 .2em}
+
+/* modal */
+.modal-back{position:fixed;inset:0;background:rgba(8,12,14,.55);display:flex;align-items:center;justify-content:center;padding:1rem;z-index:100}
+.modal{background:var(--surface);border:1px solid var(--rule-strong);border-radius:var(--r-panel);padding:1.25rem;width:100%;max-width:420px;box-shadow:0 24px 60px -24px rgba(0,0,0,.6)}
+
+/* before / after */
+.compare.has-vs{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}
+.vs{align-self:center;color:var(--ink-3);font-size:.72rem;text-transform:uppercase;letter-spacing:.12em;font-weight:600}
+.hist-title{font-weight:600;font-size:.98rem;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hist .btn-row{justify-content:flex-end}
+@media (max-width:1000px){.rail-note-m{display:block}}
+@media (max-width:820px){.compare,.compare.has-vs{grid-template-columns:1fr}.vs{display:none}.checks li{grid-template-columns:1fr;gap:.35rem}.hist li{grid-template-columns:1fr}.hist .btn-row{justify-content:flex-start}}
+@media (max-width:640px){.brand b{white-space:nowrap}.brand span{display:none}}
+
+/* ---------- responsive ---------- */
+@media (max-width:1000px){
+  .body-grid{grid-template-columns:1fr;gap:1.25rem;padding-top:1rem}
+  .rail{position:static;overflow-x:auto;border-bottom:1px solid var(--rule);padding-bottom:.4rem}
+  .rail ul{display:flex;gap:.2rem}
+  .rail li{flex:none}
+  .rail button{border-left:0;border-bottom:2px solid transparent;padding:.4rem .7rem;white-space:nowrap}
+  .rail button[aria-current="page"]{border-left:0;border-bottom-color:var(--blue)}
+  .rail .rail-note{display:none}
+  .hero{grid-template-columns:1fr;gap:2rem;padding-top:.5rem}
+  .two{grid-template-columns:1fr;gap:1.5rem}
+}
+@media (max-width:820px){
+  .compare{grid-template-columns:1fr}
+  .verdict{grid-template-columns:1fr;gap:1.1rem;justify-items:start}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms !important;transition-duration:.01ms !important}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<header class="topbar">
+  <div class="topbar-in">
+    <button class="brand" data-go="home" aria-label="HumanText AI, go to home">
+      <b>HumanText AI</b><span>AI writing assistant</span>
+    </button>
+    <div class="topbar-sp"></div>
+    <button class="theme-btn" id="themeBtn" aria-label="Change theme"><span id="themeLabel">System theme</span></button>
+  </div>
+</header>
+
+<div class="body-grid">
+  <nav class="rail" aria-label="Sections">
+    <ul>
+      <li><button data-go="home">Home</button></li>
+      <li><button data-go="detector">AI Detector</button></li>
+      <li><button data-go="rewriter">Natural Rewriter</button></li>
+      <li><button data-go="answer">Answer Improver</button></li>
+      <li><button data-go="student">🎓 Student Mode</button></li>
+      <li><button data-go="references">Reference Assistant</button></li>
+      <li><button data-go="coach">Writing Coach</button></li>
+      <li><button data-go="history">History</button></li>
+      <li><button data-go="settings">Settings</button></li>
+      <li><button data-go="about">About</button></li>
+    </ul>
+    <div class="rail-note"><strong>Your text stays in this browser.</strong>
+      <ul>
+        <li>Analysis runs locally when possible.</li>
+        <li>History is stored locally.</li>
+        <li>Text is only sent out when you use an AI feature, such as a rewrite.</li>
+        <li>No API keys live in this page.</li>
+      </ul></div>
+    <p class="rail-note-m">Your text stays in this browser.</p>
+  </nav>
+
+  <main>
+
+  <!-- ============ HOME ============ -->
+  <section class="page" id="page-home" tabindex="-1">
+    <div class="hero">
+      <div>
+        <p class="eyebrow">HumanText AI</p>
+        <h1>Write naturally. Understand clearly.</h1>
+        <p class="lede">Analyze your writing, improve clarity, and turn rough drafts into natural, personal writing.</p>
+        <div class="btn-row">
+          <button class="btn btn-primary" data-go="detector">Analyze Text</button>
+          <button class="btn" data-go="answer">Improve My Answer</button>
+          <button class="btn btn-quiet" data-go="rewriter">Rewrite something</button>
+        </div>
+        <p class="hero-sub">An AI writing assistant for analyzing, improving, and personalizing your writing.</p>
+      </div>
+
+      <div class="specimen">
+        <div class="specimen-head">
+          <p id="specCaption">Every sentence here is almost the same length. The rhythm never changes.</p>
+          <div class="seg" role="group" aria-label="Specimen">
+            <button type="button" data-spec="even" aria-pressed="true">Even</button>
+            <button type="button" data-spec="varied" aria-pressed="false">Varied</button>
+          </div>
+        </div>
+        <div class="rhythm" id="specBars"></div>
+        <div class="specimen-text" id="specText"></div>
+      </div>
+    </div>
+
+    <section class="home-sec" style="border-top:0;padding-top:.5rem">
+      <h2>Everything for a better draft</h2>
+      <p>Made for students, writers and content creators who want to understand their writing and improve it in their own voice.</p>
+      <div class="feat-grid">
+        <button class="feat" data-go="detector"><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><strong>AI Writing Analysis</strong><span class="d">Six scores, paragraph by paragraph, with the reasons behind each result.</span></button>
+        <button class="feat" data-go="rewriter"><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16l-1 4z"/><path d="M14 6l3 3"/></svg></span><strong>Natural Rewriting</strong><span class="d">Six styles plus tone, length and personality controls, with a before and after view.</span></button>
+        <button class="feat" data-go="answer"><span class="ico"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-6"/></svg></span><strong>Answer Improver</strong><span class="d">Check an answer against its question, then clarify it while keeping your ideas.</span></button>
+        <button class="feat" data-go="references"><span class="ico"><svg viewBox="0 0 24 24"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3V4z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></svg></span><strong>Reference Assistant</strong><span class="d">APA 7, IEEE, MLA or Harvard, plus a citation consistency check.</span></button>
+        <button class="feat" data-go="coach"><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4V5z"/></svg></span><strong>Writing Coach</strong><span class="d">Feedback that teaches you what to fix instead of fixing it for you.</span></button>
+        <button class="feat" data-scroll="home-privacy"><span class="ico"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span><strong>Privacy First</strong><span class="d">Analysis runs in your browser and your history never leaves it.</span></button>
+      </div>
+      <div class="banner">
+        <p>🎓 <strong>Student Mode</strong> walks you from the question to your own idea, your draft, a check, and a final version, and shows what needs improvement before it writes anything.</p>
+        <button class="btn btn-primary" data-go="student">Open Student Mode</button>
+      </div>
+    </section>
+
+    <section class="home-sec">
+      <h2>How it works</h2>
+      <p>Three steps, all of them optional after the first.</p>
+      <ol class="steps">
+        <li><b>1</b><strong>Paste your text</strong><span>Drop in an essay, a report, a chapter draft. It is read in your browser.</span></li>
+        <li><b>2</b><strong>Read the signals</strong><span>Sentence rhythm, repetition, vocabulary spread and phrasing habits, each one explained.</span></li>
+        <li><b>3</b><strong>Rewrite and compare</strong><span>Ask for a more natural version, then see exactly what changed, word by word.</span></li>
+      </ol>
+    </section>
+
+    <section class="home-sec">
+      <div class="two">
+        <div>
+          <h2>AI writing analysis</h2>
+          <p>The analysis measures the texture of your prose, not its origin. It counts things you can check yourself: how much sentence lengths vary, which phrases repeat, how wide the vocabulary is, how often formulaic connectors appear, how evenly paragraphs are built.</p>
+          <p>The result is a range, not a verdict. Writing that scores high is often just writing that is very even &mdash; which is a fair thing to know about a draft, whoever wrote it.</p>
+        </div>
+        <div>
+          <h2>Natural rewriting</h2>
+          <p>The rewriter works on phrasing, sentence variety and flow. It keeps your meaning, your facts, your numbers, your citations and your terminology exactly where you put them.</p>
+          <dl class="deflist">
+            <dt>It will not invent sources</dt>
+            <dd>No citation, statistic or reference is added that was not already in your text.</dd>
+            <dt>It will not add mistakes</dt>
+            <dd>Deliberate typos and broken grammar do not make writing human. They just make it worse.</dd>
+            <dt>It will not promise anything about detectors</dt>
+            <dd>The goal is a clearer draft you can defend, not a score on someone else's tool.</dd>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <section class="home-sec" id="home-privacy">
+      <h2>Privacy</h2>
+      <p>Analysis runs entirely in your browser &mdash; your text is never sent anywhere for it. History and drafts are saved to this browser's local storage only, and you can turn that off or clear them in Settings. The AI features (rewriting, improving an answer, formatting references and deeper coaching) are the only actions that send your text out, because they ask Claude to do the work; you are asked for permission the first time, and nothing is stored on a server by this app. No API keys are used or exposed in this page.</p>
+    </section>
+
+    <section class="home-sec">
+      <h2>Questions</h2>
+      <details class="faq"><summary>Can this prove who wrote a text?</summary><p>No, and nothing else can either. It measures stylistic patterns that are common in machine-generated prose, and plenty of human writing shares them &mdash; technical documentation, translated text, careful non-native English, anything written to a template. Treat the score as a description of the writing, never as evidence about a writer.</p></details>
+      <details class="faq"><summary>Why did my own writing score high?</summary><p>Usually because it is very even: similar sentence lengths, a steady supply of connectors like "moreover" and "therefore", paragraphs of near-identical shape. That is a normal result of careful editing. Open "Why this result?" to see which specific patterns drove the number.</p></details>
+      <details class="faq"><summary>Will the rewriter get my text past an AI detector?</summary><p>That is not what it is for and it is not promised. It improves phrasing, rhythm and readability. If your work needs to be your own, the rewriting still has to be your own decision about every sentence &mdash; read the comparison and accept the changes you actually agree with.</p></details>
+      <details class="faq"><summary>How long should the text be?</summary><p>At least 120 words for a meaningful read, and 300 or more is better. Below that, the statistics are noise and the panel will say so.</p></details>
+      <details class="faq"><summary>Does it work in languages other than English?</summary><p>The statistical measures are language-agnostic. Phrase-level checks currently know English and Indonesian connector patterns; other languages will simply show fewer phrase findings. Rewriting follows whatever language your text is in.</p></details>
+    </section>
+  </section>
+
+  <!-- ============ DETECTOR ============ -->
+  <section class="page" id="page-detector" tabindex="-1">
+    <div class="page-head">
+      <h1>AI Detector</h1>
+      <p>Paste a draft to see how it reads: rhythm, repetition, vocabulary and phrasing habits. Everything below is computed in your browser.</p>
+    </div>
+    <div class="editor-slot" data-slot="detector"></div>
+    <div id="detectorResult" style="margin-top:1.25rem"></div>
+  </section>
+
+  <!-- ============ REWRITER ============ -->
+  <section class="page" id="page-rewriter" tabindex="-1">
+    <div class="page-head">
+      <h1>Natural rewriter</h1>
+      <p>Pick a voice, then compare the result against your original line by line.</p>
+    </div>
+    <div class="editor-slot" data-slot="rewriter"></div>
+
+    <div class="panel" style="margin-top:1.25rem">
+      <h2 class="panel-title">Style</h2>
+      <p class="panel-sub">This sets the voice. Your meaning, facts, figures and citations are preserved in every one of them.</p>
+      <div class="styles" id="stylePicker"></div>
+
+      <div id="customWrap" style="display:none;margin-top:1rem">
+        <label class="field">
+          <span>Your instructions</span>
+          <textarea id="customInstr" rows="3" style="width:100%" placeholder="e.g. Keep it under 400 words, use the first person, and make the second paragraph less defensive."></textarea>
+          <small>Describe the voice you want. Instructions that ask for false claims, invented sources or deliberate errors are ignored.</small>
+        </label>
+      </div>
+
+      <div class="ctrl-grid">
+        <div class="field"><span>Tone</span>
+          <input type="range" id="toneRange" min="0" max="100" value="50" aria-label="Tone, from formal to casual">
+          <div class="range-labels"><span>Formal</span><span>Casual</span></div></div>
+        <div class="field"><span>Length</span>
+          <input type="range" id="lenRange" min="0" max="100" value="50" aria-label="Length, from short to detailed">
+          <div class="range-labels"><span>Short</span><span>Detailed</span></div></div>
+        <label class="field"><span>Personality</span>
+          <select id="persSel"><option value="Neutral">Neutral</option><option value="Personal">Personal</option><option value="Student">Student</option><option value="Professional">Professional</option></select></label>
+      </div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:1.25rem;align-items:flex-end;margin-top:1.1rem">
+        <label class="field" style="margin:0">
+          <span>Output language</span>
+          <select id="langSel">
+            <option value="same">Same as the original</option>
+            <option value="English">English</option>
+            <option value="Indonesian">Bahasa Indonesia</option>
+          </select>
+        </label>
+        <div class="btn-row" style="margin-left:auto">
+          <button class="btn btn-primary" id="rewriteBtn">Make more natural</button>
+          <button class="btn" id="stopBtn" style="display:none">Stop</button>
+        </div>
+      </div>
+      <div id="rewriteStatus" style="margin-top:1rem"></div>
+    </div>
+
+    <div id="compareWrap" style="margin-top:1.25rem"></div>
+  </section>
+
+  <!-- ============ ANSWER IMPROVER ============ -->
+  <section class="page" id="page-answer" tabindex="-1">
+    <div class="page-head">
+      <h1>Answer Improver</h1>
+      <p>Check how well your answer responds to the question, then tidy it up without swapping your thinking for someone else's.</p>
+    </div>
+    <div class="panel">
+      <label class="field caps"><span>Question</span>
+        <textarea class="ta" id="ansQ" rows="3" placeholder="Masukkan pertanyaan atau soal..." spellcheck="false"></textarea></label>
+      <label class="field caps" style="margin-bottom:0"><span>My answer</span>
+        <textarea class="ta" id="ansA" rows="10" placeholder="Masukkan jawaban kamu..." spellcheck="false"></textarea></label>
+      <div style="display:flex;flex-wrap:wrap;gap:.75rem 1.1rem;align-items:center;margin-top:1rem">
+        <div class="counts"><span><b id="ansWords">0</b> words</span><span><b id="ansSents">0</b> sentences</span><span><b id="ansRead">0</b> min read</span></div>
+        <div class="editor-actions">
+          <button class="btn btn-sm" id="ansSample">Try a sample</button>
+          <button class="btn btn-sm" id="ansCopy">Copy text</button>
+          <button class="btn btn-sm" id="ansClear">Clear</button>
+          <button class="btn btn-sm" id="ansAnalyze">Analyze My Answer</button>
+          <button class="btn btn-sm btn-primary" id="ansImprove" data-ai>Improve My Answer</button>
+        </div>
+      </div>
+      <div data-ainote style="margin-top:.9rem"></div>
+      <p style="font-size:.84rem;color:var(--ink-3);margin:.9rem 0 0">Improving keeps your main idea, your point of view, your examples, your arguments and your conclusion. If something important is missing, it tells you instead of making it up.</p>
+    </div>
+    <div id="ansAnalysis" style="margin-top:1.25rem"></div>
+    <div id="ansImproveOut" style="margin-top:1.25rem"></div>
+  </section>
+
+  <!-- ============ STUDENT MODE ============ -->
+  <section class="page" id="page-student" tabindex="-1">
+    <div class="page-head">
+      <h1>🎓 Student Mode</h1>
+      <p>Build your own answer step by step. The tool shows what needs improvement before it produces a final version.</p>
+    </div>
+    <ol class="stepper" id="stuSteps" aria-label="Steps"></ol>
+    <div id="stuBody"></div>
+  </section>
+
+  <!-- ============ REFERENCE ASSISTANT ============ -->
+  <section class="page" id="page-references" tabindex="-1">
+    <div class="page-head">
+      <h1>Reference Assistant</h1>
+      <p>Tidy a reference list into a citation style and check that in-text citations have a matching entry. It only uses what you give it and never adds sources.</p>
+    </div>
+    <div class="panel">
+      <h2 class="panel-title">Format references</h2>
+      <p class="panel-sub">Paste the details of each source. Rough notes are fine.</p>
+      <div class="field"><span>Citation style</span>
+        <div class="seg" role="group" aria-label="Citation style" id="refStyleSeg">
+          <button type="button" data-refstyle="APA 7" aria-pressed="true">APA 7</button>
+          <button type="button" data-refstyle="IEEE" aria-pressed="false">IEEE</button>
+          <button type="button" data-refstyle="MLA" aria-pressed="false">MLA</button>
+          <button type="button" data-refstyle="Harvard" aria-pressed="false">Harvard</button>
+        </div>
+      </div>
+      <label class="field caps"><span>Source information</span>
+        <textarea class="ta" id="refSrc" rows="7" placeholder="One source per paragraph, e.g. author, year, title, journal, volume, pages, DOI or URL..." spellcheck="false"></textarea></label>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="refFormat" data-ai>Format references</button>
+        <button class="btn btn-sm" id="refSample">Try a sample</button>
+        <button class="btn btn-sm" id="refClear">Clear</button>
+      </div>
+      <div data-ainote style="margin-top:.9rem"></div>
+    </div>
+    <div id="refOut" style="margin-top:1.25rem"></div>
+
+    <div class="panel" style="margin-top:1.25rem">
+      <h2 class="panel-title">Check citation consistency</h2>
+      <p class="panel-sub">Compares the citations in your text with the reference list you provide. This runs in your browser and sends nothing anywhere.</p>
+      <label class="field caps"><span>Text with citations</span>
+        <textarea class="ta" id="refText" rows="6" placeholder="Paste text containing citations such as (Rahman &amp; Putri, 2021) or [1]..." spellcheck="false"></textarea></label>
+      <label class="field caps"><span>Reference list</span>
+        <textarea class="ta" id="refList" rows="6" placeholder="Paste your reference list, or use the formatted result above." spellcheck="false"></textarea></label>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="refCheck">Check citation consistency</button>
+        <button class="btn btn-sm" id="refUse">Use formatted references above</button>
+      </div>
+    </div>
+    <div id="refCheckOut" style="margin-top:1.25rem"></div>
+  </section>
+
+  <!-- ============ WRITING COACH ============ -->
+  <section class="page" id="page-coach" tabindex="-1">
+    <div class="page-head">
+      <h1>Writing Coach</h1>
+      <p>Feedback that helps you learn to write it better yourself. It points things out and never rewrites for you.</p>
+    </div>
+    <div class="editor-slot" data-slot="coach"></div>
+    <div class="btn-row" style="margin-top:1rem">
+      <button class="btn btn-primary" id="coachBtn">Get coaching feedback</button>
+    </div>
+    <div data-ainote style="margin-top:.9rem"></div>
+    <div id="coachResult" style="margin-top:1.25rem"></div>
+  </section>
+
+  <!-- ============ HISTORY ============ -->
+  <section class="page" id="page-history" tabindex="-1">
+    <div class="page-head">
+      <h1>History</h1>
+      <p>Saved in this browser only. Clearing your browser data removes it.</p>
+    </div>
+    <div id="historyBody"></div>
+  </section>
+
+  <!-- ============ SETTINGS ============ -->
+  <section class="page" id="page-settings" tabindex="-1">
+    <div class="page-head">
+      <h1>Settings</h1>
+      <p>Preferences are stored locally, next to your history.</p>
+    </div>
+
+    <div class="panel">
+      <h2 class="panel-title">Appearance</h2>
+      <p class="panel-sub">System follows whatever your device is set to.</p>
+      <div class="seg" role="group" aria-label="Theme">
+        <button type="button" data-theme-set="system">System</button>
+        <button type="button" data-theme-set="light">Light</button>
+        <button type="button" data-theme-set="dark">Dark</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 class="panel-title">Writing</h2>
+      <p class="panel-sub">Defaults for the rewriter, and the language used for feedback.</p>
+      <label class="field" style="max-width:320px"><span>Default writing style</span><select id="setDefStyle"></select></label>
+      <label class="field" style="max-width:320px;margin-bottom:0"><span>Language</span>
+        <select id="setDefLang"><option value="same">Same as the text</option><option value="Indonesian">Indonesian</option><option value="English">English</option></select>
+        <small>Used for rewrites and for feedback from the answer checker and the coach.</small></label>
+    </div>
+
+    <div class="panel">
+      <h2 class="panel-title">Privacy and storage</h2>
+      <p class="panel-sub">Nothing here leaves your browser.</p>
+      <label class="switch"><input type="checkbox" id="setSaveHistory">
+        <div><strong>Keep a history</strong><small>Title, date, word count and scores for each run.</small></div></label>
+      <label class="switch"><input type="checkbox" id="setStoreText">
+        <div><strong>Store the full text with each entry</strong><small>Needed to reopen a draft later. Turn it off to keep only a short preview and the numbers.</small></div></label>
+      <label class="switch"><input type="checkbox" id="setStoreRewrite">
+        <div><strong>Store rewritten versions too</strong><small>Keeps the natural or improved version alongside the original.</small></div></label>
+      <label class="switch"><input type="checkbox" id="setSaveDrafts">
+        <div><strong>Save drafts automatically</strong><small>Keeps what you are typing in this browser so a refresh does not lose it.</small></div></label>
+      <div class="btn-row" style="margin-top:1rem">
+        <button class="btn btn-sm" id="exportBtn">Export history</button>
+        <button class="btn btn-sm" id="clearHistBtn">Clear local history</button>
+        <button class="btn btn-sm" id="clearDraftsBtn">Clear all saved drafts</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 class="panel-title">Data and privacy</h2>
+      <p class="panel-sub">The short version.</p>
+      <div class="prose" style="font-size:.92rem">
+        <ul>
+          <li>Text analysis runs locally in your browser. Your text is not transmitted for it.</li>
+          <li>History and drafts are stored in this browser's local storage only.</li>
+          <li>Text is only uploaded when you use an AI feature (a rewrite, answer improvement, reference formatting or deeper coaching). It goes to Claude through the artifact runtime and your browser asks permission the first time.</li>
+          <li>There is no account, no server-side database and no cloud sync. No API keys are stored or exposed in this page.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ABOUT ============ -->
+  <section class="page" id="page-about" tabindex="-1">
+    <div class="page-head"><h1>About</h1><p>What this tool measures, and what it deliberately does not claim.</p></div>
+    <div class="prose">
+      <p>HumanText AI is an AI writing assistant for analyzing, improving and personalizing your writing. It is a writing instrument, not a verdict machine. It reads a draft the way an editor skims for habits: does every sentence run the same length, does the same connector open every paragraph, does the vocabulary keep circling the same dozen words.</p>
+
+      <h2>How the estimate is built</h2>
+      <p>The AI-like pattern indicator is a weighted blend of measurements taken from your text. Nothing is learned from a model and nothing is compared against a database &mdash; you could reproduce every number by hand with enough patience.</p>
+      <ul>
+        <li><strong>Sentence uniformity (24%)</strong> &mdash; the coefficient of variation of sentence lengths. Low variation is the single strongest pattern in machine-generated prose.</li>
+        <li><strong>Formulaic connectors (20%)</strong> &mdash; density of phrases like "moreover", "it is important to note", "oleh karena itu", "dengan demikian".</li>
+        <li><strong>Repetition (14%)</strong> &mdash; repeated three-word sequences, repeated sentence openers, and how concentrated the content words are.</li>
+        <li><strong>Absent human texture (14%)</strong> &mdash; contractions, questions, asides, first-person marks, short fragments, hedges. Their absence nudges the figure up.</li>
+        <li><strong>Paragraph regularity (8%)</strong> &mdash; how similar paragraphs are in size and shape.</li>
+        <li><strong>Vocabulary spread (8%)</strong> &mdash; a moving-window type-token ratio, which does not punish long texts the way a plain ratio does.</li>
+        <li><strong>Triplet phrasing (7%)</strong> and <strong>dash density (5%)</strong> &mdash; two habits that models lean on heavily.</li>
+      </ul>
+      <p>Several of these appearing together counts for more than any one alone, so the blend is nudged up when three or more are strongly elevated. The figure is then bounded to the 5&ndash;95 range: this method cannot justify certainty at either end, and a page that printed 0% or 100% would be lying about what it knows.</p>
+      <p>Short texts are unreliable and the panel says so rather than hiding it. Under 120 words the figure is pulled toward the middle, because at that length the statistics are mostly noise.</p>
+
+      <h2>The other tools</h2>
+      <p><strong>Paragraph analysis</strong> scores each paragraph on the same signals, so you can see which one reads most formulaically and send it straight to the rewriter. Short paragraphs give less reliable readings, and the page says so.</p>
+      <p><strong>Readability</strong> is estimated from sentence length and how many long words appear. It is a rough guide rather than a formula tied to one language.</p>
+      <p><strong>Answer Improver</strong> and <strong>Student Mode</strong> check an answer against its question and tidy it while keeping your ideas, examples, arguments and conclusion. Scores are writing indicators, not grades, and when something important is missing the tool says so instead of inventing it.</p>
+      <p><strong>Reference Assistant</strong> formats sources you provide and checks that in-text citations match your reference list. It never adds a source and cannot verify that one exists.</p>
+      <p><strong>Writing Coach</strong> gives feedback so you can improve the draft yourself. It does not rewrite.</p>
+
+      <h2>What it cannot do</h2>
+      <p>It cannot identify an author. It cannot distinguish a careful human editor from a model, because after enough editing the patterns converge &mdash; that is the honest limit of every stylometric method, including the commercial ones. False positives fall hardest on non-native writers and on technical prose, both of which are naturally more uniform.</p>
+
+      <h2>On using the rewriter honestly</h2>
+      <p>If the work you are writing is supposed to be yours, a rewrite is a draft to argue with, not an answer to accept. Read the comparison, keep the changes that say what you meant, throw out the ones that do not. Many institutions treat undisclosed AI assistance as misconduct, and that is a question about your rules, not about your word count. The rewriter will never claim your text was written by a human, and it will not degrade your grammar to look more convincing to a detector.</p>
+
+      <h2>Built with</h2>
+      <p>A single self-contained page: the analysis engine is plain JavaScript, the interface is hand-written CSS with a light and dark palette, and rewriting is delegated to Claude through the artifact runtime. No tracker, no analytics, no API keys, and no network calls apart from the AI features you choose to run.</p>
+    </div>
+  </section>
+
+  </main>
+</div>
+</div>
+
+<!-- persistent editor, moved between pages -->
+<div id="editorHost" hidden>
+  <div class="editor-wrap">
+    <div class="ctx-bar" id="ctxBar" hidden><span>Working on <b>paragraph <span id="ctxN"></span></b> only. Your full draft is kept safe.</span><button type="button" class="btn btn-sm" id="ctxRestore">Restore full draft</button></div>
+    <label class="sr" for="editor">Your text</label>
+    <textarea id="editor" placeholder="Tempelkan teks yang ingin dianalisis..." spellcheck="false"></textarea>
+    <div class="editor-bar">
+      <div class="counts">
+        <span><b id="cWords">0</b> words</span>
+        <span><b id="cChars">0</b> characters</span>
+        <span><b id="cSents">0</b> sentences</span>
+        <span><b id="cRead">0</b> min read</span>
+      </div>
+      <div class="editor-actions">
+        <button class="btn btn-sm" id="sampleBtn">Try a sample</button>
+        <button class="btn btn-sm" id="copyTextBtn">Copy text</button>
+        <button class="btn btn-sm" id="clearBtn">Clear</button>
+        <button class="btn btn-sm" id="naturalBtn">Make more natural</button>
+        <button class="btn btn-sm btn-primary" id="analyzeBtn">Analyze text</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+"use strict";
+/* ============================================================
+   1. ANALYSIS ENGINE  —  runs entirely in the browser
+   ============================================================ */
+const clamp01 = x => x < 0 ? 0 : x > 1 ? 1 : x;
+const pct = x => Math.round(clamp01(x) * 100);
+
+const ABBR = /\b(?:mr|mrs|ms|dr|prof|sr|jr|st|no|vs|etc|e\.g|i\.e|cf|al|fig|vol|ed|pp|hlm|dll|dsb|dst|tsb|yth|drs|ir|spd|mpd)\.$/i;
+
+function splitSentences(text) {
+  const out = [];
+  text.split(/\n+/).forEach(block => {
+    const p = block.trim();
+    if (!p) return;
+    const parts = p.match(/[^.!?…]+(?:[.!?…]+["'”’)\]]*|$)/g) || [p];
+    let buf = "";
+    parts.forEach(raw => {
+      const s = raw.trim();
+      if (!s) return;
+      buf = buf ? buf + " " + s : s;
+      const wc = (buf.match(/[\p{L}\p{N}]+/gu) || []).length;
+      if (ABBR.test(buf) || /\b\p{L}\.$/u.test(buf) || wc < 2) return;   // keep accumulating
+      out.push(buf); buf = "";
+    });
+    if (buf) out.push(buf);
+  });
+  return out;
+}
+
+const wordsOf = t => (t.toLowerCase().match(/[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu) || []);
+
+const STOP = new Set(("the a an and or but of to in on at for with by from as is are was were be been being it its this that these those there here " +
+  "not no so if then than which who whom whose what when where how also very more most much many some any each such about into over under between " +
+  "i you he she we they me him her us them my your his our their do does did done have has had will would can could should may might must " +
+  "yang di ke dari untuk pada dengan dan atau tetapi namun adalah ialah itu ini akan telah sudah dapat bisa harus juga tidak bukan sebagai " +
+  "dalam oleh karena agar supaya sehingga serta para lebih paling sangat hanya masih saja kami kita saya anda mereka dia ada tersebut " +
+  "bahwa jika maka antara terhadap secara suatu adanya merupakan").split(/\s+/));
+
+const CONNECTORS = [
+  ["moreover", /\bmoreover\b/g], ["furthermore", /\bfurthermore\b/g], ["additionally", /\badditionally\b/g],
+  ["in addition", /\bin addition\b/g], ["however", /\bhowever\b/g], ["therefore", /\btherefore\b/g],
+  ["thus", /\bthus\b/g], ["consequently", /\bconsequently\b/g], ["in conclusion", /\bin conclusion\b/g],
+  ["overall", /\boverall,/g], ["ultimately", /\bultimately\b/g], ["in today's world", /\bin today'?s? (?:[\w-]+ ){0,3}?(?:world|society|digital age|digital landscape|landscape|era)\b/g],
+  ["it is important to note", /\bit is (?:important|worth) (?:to note|noting)\b/g], ["plays a crucial role", /\bplays? a (?:crucial|vital|significant|key) role\b/g],
+  ["delve into", /\bdelv(?:e|ing) into\b/g], ["the landscape of", /\bthe (?:landscape|realm|world) of\b/g],
+  ["navigate", /\bnavigat(?:e|ing) the\b/g], ["foster", /\bfoster(?:s|ing)?\b/g], ["leverage", /\bleverag(?:e|es|ing)\b/g],
+  ["robust", /\brobust\b/g], ["seamless", /\bseamless(?:ly)?\b/g], ["comprehensive", /\bcomprehensive\b/g],
+  ["multifaceted", /\bmultifaceted\b/g], ["on the other hand", /\bon the other hand\b/g],
+  ["first and foremost", /\bfirst and foremost\b/g], ["in summary", /\bin summary\b/g], ["to sum up", /\bto sum up\b/g],
+  ["as a result", /\bas a result\b/g], ["in essence", /\bin essence\b/g], ["a testament to", /\ba testament to\b/g],
+  ["not only … but also", /\bnot only\b[^.]{0,60}\bbut also\b/g],
+  ["selain itu", /\bselain itu\b/g], ["oleh karena itu", /\boleh karena itu\b/g], ["dengan demikian", /\bdengan demikian\b/g],
+  ["di sisi lain", /\bdi sisi lain\b/g], ["namun demikian", /\bnamun demikian\b/g], ["dapat disimpulkan", /\bdapat disimpulkan\b/g],
+  ["sebagai kesimpulan", /\bsebagai kesimpulan\b/g], ["hal ini menunjukkan", /\bhal ini menunjukkan\b/g],
+  ["memainkan peran penting", /\bmemainkan peran (?:penting|krusial|vital)\b/g], ["di era modern", /\b(?:di|dalam) era (?:modern|digital|globalisasi)\b/g],
+  ["penting untuk dicatat", /\bpenting untuk (?:dicatat|diperhatikan|dipahami)\b/g], ["secara keseluruhan", /\bsecara keseluruhan\b/g],
+  ["seiring berjalannya waktu", /\bseiring (?:berjalannya waktu|dengan)\b/g], ["tidak hanya … tetapi juga", /\btidak hanya\b[^.]{0,60}\b(?:tetapi|namun) juga\b/g]
+];
+
+/* ---------- v2: paragraph + readability helpers ---------- */
+function getParas(text) {
+  const t = text.replace(/\r/g, "");
+  let ps = t.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
+  if (ps.length === 1 && /\n/.test(ps[0])) ps = ps[0].split(/\n+/).map(p => p.trim()).filter(Boolean);
+  return ps;
+}
+
+const CONN_START = /^(?:moreover|furthermore|additionally|in addition|however|therefore|thus|consequently|in conclusion|overall|ultimately|in summary|to sum up|as a result|on the other hand|first and foremost|selain itu|oleh karena itu|dengan demikian|namun demikian|di sisi lain|secara keseluruhan|sebagai kesimpulan|dapat disimpulkan|penting untuk dicatat)\b/i;
+
+function readabilityScore(toks, lengths) {
+  if (!toks.length) return 0;
+  const mean = lengths.length ? lengths.reduce((a, b) => a + b, 0) / lengths.length : toks.length;
+  const sl = clamp01((38 - mean) / 18);
+  const longWords = toks.filter(w => w.replace(/[^\p{L}]/gu, "").length >= 13).length / toks.length;
+  const lw = clamp01((0.15 - longWords) / 0.12);
+  const veryLong = lengths.length ? lengths.filter(n => n > 40).length / lengths.length : 0;
+  const vl = clamp01(1 - veryLong * 4);
+  return pct(0.5 * sl + 0.3 * lw + 0.2 * vl);
+}
+
+function paraScore(p) {
+  const toks = wordsOf(p), n = toks.length;
+  const lower = p.toLowerCase();
+  const lens = splitSentences(p).map(s => wordsOf(s).length).filter(x => x > 0);
+  const mean = lens.length ? lens.reduce((a, b) => a + b, 0) / lens.length : 0;
+  const sd = lens.length > 1 ? Math.sqrt(lens.reduce((a, b) => a + (b - mean) ** 2, 0) / (lens.length - 1)) : 0;
+  const cv = mean ? sd / mean : 0;
+  // few sentences say little about rhythm, so pull toward the middle
+  const uniRaw = lens.length >= 3 ? clamp01((0.62 - cv) / 0.42) : 0.35;
+  const shrink = lens.length >= 3 ? Math.min(1, (lens.length - 2) / 4) : 0;
+  const uni = 0.35 + (uniRaw - 0.35) * shrink;
+  let hits = 0;
+  CONNECTORS.forEach(([, re]) => { const m = lower.match(new RegExp(re.source, "g")); if (m) hits += m.length; });
+  const conn = clamp01((n ? hits / n * 100 : 0) / 2.2);
+  const opener = CONN_START.test(lower.replace(/^[^\p{L}]+/u, ""));
+  const tri = new Map(); let extra = 0;
+  for (let i = 0; i + 2 < n; i++) { const k = toks[i] + " " + toks[i + 1] + " " + toks[i + 2]; tri.set(k, (tri.get(k) || 0) + 1); }
+  tri.forEach(v => { if (v > 1) extra += v - 1; });
+  const rep = clamp01((n > 2 ? extra / (n - 2) : 0) / 0.085);
+  const ttr = n ? new Set(toks.slice(0, 50)).size / Math.min(50, n) : 0;
+  const divers = clamp01((ttr - 0.68) / 0.26);
+  const cnt = re => (lower.match(re) || []).length;
+  const per = x => n ? x / n * 100 : 0;
+  const shortFrac = lens.length ? lens.filter(x => x < 7).length / lens.length : 0;
+  const tex = clamp01(0.25 * clamp01(per(cnt(/\b\w+['’](?:s|t|re|ve|ll|d|m)\b/g)) / 1.4)
+    + 0.30 * clamp01(per(cnt(/\b(?:i|i['’]m|my|me|we|our|saya|aku|kami)\b/g)) / 1.2)
+    + 0.15 * clamp01(per(cnt(/\?/g)) / 0.5)
+    + 0.15 * clamp01(per(cnt(/\b(?:i think|i believe|probably|perhaps|maybe|it seems|menurut saya|sepertinya|mungkin|kayaknya|rasanya)\b/g)) / 0.7)
+    + 0.15 * clamp01(shortFrac / 0.2));
+  const naturalness = pct(0.22 * (1 - uni) + 0.38 * (1 - conn) + 0.10 * (1 - rep) + 0.16 * tex + 0.14 * divers - (opener ? 0.08 : 0));
+  const band = naturalness >= 65 ? "low" : naturalness >= 45 ? "mid" : "high";
+  const notes = [];
+  if (lens.length >= 3 && uni > 0.7) notes.push("very even sentence lengths");
+  else if (lens.length >= 3 && uni < 0.3) notes.push("sentence lengths vary naturally");
+  if (hits >= 2 || conn > 0.6) notes.push(hits + " formulaic phrase" + (hits === 1 ? "" : "s"));
+  if (opener) notes.push("opens with a stock connector");
+  if (rep > 0.5) notes.push("repeated phrases");
+  if (tex > 0.4) notes.push("personal touches");
+  return { text: p, words: n, sentences: lens.length, naturalness, band, notes, opener, reliable: n >= 25 };
+}
+
+function analyze(raw) {
+  const text = raw.replace(/\r/g, "");
+  const lower = text.toLowerCase();
+  const sents = splitSentences(text);
+  const toks = wordsOf(text);
+  const paras = getParas(text);
+  const nWords = toks.length;
+  const per100 = n => nWords ? (n / nWords) * 100 : 0;
+
+  /* --- sentence rhythm --- */
+  const lengths = sents.map(s => wordsOf(s).length).filter(n => n > 0);
+  const mean = lengths.length ? lengths.reduce((a, b) => a + b, 0) / lengths.length : 0;
+  const sd = lengths.length > 1
+    ? Math.sqrt(lengths.reduce((a, b) => a + (b - mean) ** 2, 0) / (lengths.length - 1)) : 0;
+  const cv = mean ? sd / mean : 0;
+  const uniformity = pct((0.62 - cv) / 0.42);
+
+  /* --- vocabulary spread (moving-average type-token ratio) --- */
+  const win = Math.min(50, Math.max(10, nWords));
+  let mattr;
+  if (nWords <= win) mattr = nWords ? new Set(toks).size / nWords : 0;
+  else {
+    const c = new Map(); let sum = 0, n = 0;
+    for (let i = 0; i < nWords; i++) {
+      c.set(toks[i], (c.get(toks[i]) || 0) + 1);
+      if (i >= win) { const o = toks[i - win], v = c.get(o) - 1; v ? c.set(o, v) : c.delete(o); }
+      if (i >= win - 1) { sum += c.size / win; n++; }
+    }
+    mattr = sum / n;
+  }
+  const diversity = pct((mattr - 0.68) / 0.26);
+
+  /* --- repetition --- */
+  const tri = new Map();
+  for (let i = 0; i + 2 < nWords; i++) {
+    const k = toks[i] + " " + toks[i + 1] + " " + toks[i + 2];
+    tri.set(k, (tri.get(k) || 0) + 1);
+  }
+  let triExtra = 0; const repeatedPhrases = [];
+  tri.forEach((v, k) => { if (v > 1) { triExtra += v - 1; if (!STOP.has(k.split(" ")[0]) || v > 2) repeatedPhrases.push({ phrase: k, count: v }); } });
+  repeatedPhrases.sort((a, b) => b.count - a.count);
+  const triRate = tri.size ? triExtra / Math.max(1, nWords - 2) : 0;
+
+  const openers = sents.map(s => (wordsOf(s)[0] || "")).filter(Boolean);
+  const openCount = new Map();
+  openers.forEach(o => openCount.set(o, (openCount.get(o) || 0) + 1));
+  let openExtra = 0, topOpener = null;
+  openCount.forEach((v, k) => { openExtra += v - 1; if (!topOpener || v > topOpener.count) topOpener = { word: k, count: v }; });
+  const openerRepeat = openers.length > 3 ? openExtra / openers.length : 0;
+
+  const content = toks.filter(w => !STOP.has(w) && w.length > 2);
+  const cCount = new Map();
+  content.forEach(w => cCount.set(w, (cCount.get(w) || 0) + 1));
+  const topContent = [...cCount.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const concentration = content.length ? topContent.reduce((a, b) => a + b[1], 0) / content.length : 0;
+
+  const repetition = pct(0.45 * clamp01(triRate / 0.085) + 0.32 * clamp01((openerRepeat - 0.08) / 0.32)
+    + 0.23 * clamp01((concentration - 0.06) / 0.15));
+
+  /* --- formulaic connectors --- */
+  const found = [];
+  let connHits = 0;
+  CONNECTORS.forEach(([label, re]) => {
+    const m = lower.match(new RegExp(re.source, "g"));
+    if (m && m.length) { connHits += m.length; found.push({ phrase: label, count: m.length }); }
+  });
+  found.sort((a, b) => b.count - a.count);
+  const connDensity = per100(connHits);
+  const connPressure = clamp01(connDensity / 2.2);
+
+  /* --- paragraph regularity --- */
+  let paraReg = 0.35;
+  if (paras.length >= 3) {
+    const pw = paras.map(p => wordsOf(p).length);
+    const pm = pw.reduce((a, b) => a + b, 0) / pw.length;
+    const psd = Math.sqrt(pw.reduce((a, b) => a + (b - pm) ** 2, 0) / (pw.length - 1));
+    paraReg = clamp01((0.42 - (pm ? psd / pm : 0)) / 0.42);
+  }
+
+  /* --- human texture --- */
+  const count = re => (lower.match(re) || []).length;
+  const contractions = count(/\b\w+['’](?:s|t|re|ve|ll|d|m)\b/g);
+  const firstPerson = count(/\b(?:i|i['’]m|my|me|myself|we|our|us|saya|aku|gue|gw|kami)\b/g);
+  const questions = count(/\?/g);
+  const parens = count(/\(/g);
+  const hedges = count(/\b(?:i think|i believe|in my view|probably|perhaps|maybe|it seems|arguably|roughly|more or less|menurut saya|sepertinya|mungkin|kayaknya|agaknya|rasanya|kurang lebih)\b/g);
+  const shortSents = lengths.filter(n => n < 7).length;
+  const shortFrac = lengths.length ? shortSents / lengths.length : 0;
+  const texture = 0.20 * clamp01(per100(contractions) / 1.4) + 0.22 * clamp01(per100(firstPerson) / 1.2)
+    + 0.14 * clamp01(per100(questions) / 0.5) + 0.14 * clamp01(per100(parens) / 0.7)
+    + 0.16 * clamp01(per100(hedges) / 0.7) + 0.14 * clamp01(shortFrac / 0.2);
+
+  /* --- stylistic habits --- */
+  const triplets = count(/\b[\p{L}\p{N}'’-]+,\s+[\p{L}\p{N}'’-]+(?:\s+[\p{L}\p{N}'’-]+)?,?\s+(?:and|or|dan|atau|serta)\s+[\p{L}\p{N}'’-]+/gu);
+  const tripletDensity = per100(triplets);
+  const dashes = count(/—|–|\s-\s/g);
+  const dashDensity = per100(dashes);
+
+  /* --- composite --- */
+  const signals = [
+    [0.24, uniformity / 100],
+    [0.20, connPressure],
+    [0.14, repetition / 100],
+    [0.14, 1 - texture],
+    [0.08, paraReg],
+    [0.08, clamp01((0.90 - mattr) / 0.18)],
+    [0.07, clamp01(tripletDensity / 1.1)],
+    [0.05, clamp01(dashDensity / 1.0)]
+  ];
+  let ai = signals.reduce((a, [w, v]) => a + w * clamp01(v), 0) * 100;
+  // Several habits appearing together is more telling than any one of them,
+  // and a text with none of them is more telling still.
+  const hot = signals.filter(([, v]) => v > 0.70).length;
+  const cold = signals.filter(([, v]) => v < 0.25).length;
+  if (hot >= 3) ai += Math.min(15, (hot - 2) * 5);
+  if (cold >= 6) ai -= 6;
+
+  const confidence = nWords < 120 ? "low" : nWords < 320 ? "medium" : "high";
+  if (nWords < 120) { const k = 0.45 + 0.55 * (nWords / 120); ai = ai * k + 42 * (1 - k); }
+  // Deliberately bounded to 5–95: this method cannot justify certainty at either end.
+  ai = Math.round(5 + clamp01(ai / 100) * 90);
+
+  const naturalness = pct(0.30 * (1 - uniformity / 100) + 0.22 * (diversity / 100)
+    + 0.22 * (1 - repetition / 100) + 0.16 * texture + 0.10 * (1 - connPressure));
+
+  const band = ai >= 66 ? "high" : ai >= 35 ? "mid" : "low";
+
+  /* --- explanations --- */
+  const F = [];
+  const add = (dir, strength, title, detail) => F.push({ dir, strength, title, detail });
+
+  if (lengths.length >= 4) {
+    const lo = Math.min(...lengths), hi = Math.max(...lengths);
+    if (cv < 0.38) add("up", cv < 0.26 ? "strong" : "moderate", "Sentence lengths barely vary",
+      `Sentences run ${lo}–${hi} words around an average of ${mean.toFixed(1)}. The spread is ${(cv * 100).toFixed(0)}% of the average; most human drafts sit nearer 45–60%.`);
+    else if (cv > 0.50) add("down", "moderate", "Sentence lengths vary widely",
+      `From ${lo} to ${hi} words, a spread of ${(cv * 100).toFixed(0)}% around the ${mean.toFixed(1)}-word average. Uneven rhythm is one of the clearest human signatures.`);
+  }
+  if (repeatedPhrases.length && triRate > 0.02)
+    add("up", triRate > 0.05 ? "strong" : "moderate", "The same phrases come back",
+      `${repeatedPhrases.length} three-word sequence${repeatedPhrases.length > 1 ? "s repeat" : " repeats"}, led by “${repeatedPhrases[0].phrase}” (${repeatedPhrases[0].count}×).`);
+  if (openerRepeat > 0.25 && topOpener && topOpener.count > 2)
+    add("up", "moderate", "Sentences open the same way",
+      `${topOpener.count} of ${sents.length} sentences start with “${topOpener.word}”, and only ${openCount.size} distinct opening words appear in total.`);
+  if (found.length && connDensity > 0.6)
+    add("up", connDensity > 1.6 ? "strong" : "moderate", "Formulaic connectors are frequent",
+      `${connHits} instance${connHits > 1 ? "s" : ""} across ${found.length} phrase${found.length > 1 ? "s" : ""} — ${found.slice(0, 4).map(f => `“${f.phrase}” (${f.count})`).join(", ")}.`);
+  if (mattr < 0.80)
+    add("up", mattr < 0.74 ? "strong" : "moderate", "Vocabulary keeps circling",
+      `In any 50-word stretch only ${(mattr * 100).toFixed(0)}% of words are distinct. ${topContent.length ? `“${topContent[0][0]}” alone appears ${topContent[0][1]} times.` : ""}`);
+  else if (mattr > 0.89)
+    add("down", "slight", "Wide vocabulary spread", `About ${(mattr * 100).toFixed(0)}% of words in any 50-word stretch are distinct, with ${new Set(toks).size} distinct words overall.`);
+  if (paras.length >= 3 && paraReg > 0.72)
+    add("up", "moderate", "Paragraphs are built to the same size",
+      `${paras.length} paragraphs of ${Math.round(paras.reduce((a, p) => a + wordsOf(p).length, 0) / paras.length)} words on average, with very little difference between them.`);
+  if (texture < 0.22 && nWords > 150)
+    add("up", texture < 0.1 ? "moderate" : "slight", "Few personal or informal marks",
+      `No contractions to speak of (${contractions}), ${questions} question${questions === 1 ? "" : "s"}, ${parens} aside${parens === 1 ? "" : "s"} in brackets and ${shortSents} short sentence${shortSents === 1 ? "" : "s"}. Careful academic prose often looks like this too.`);
+  else if (texture > 0.45)
+    add("down", "moderate", "A personal voice shows through",
+      `Contractions, first-person references, asides and short sentences all appear at rates typical of someone writing in their own voice.`);
+  if (tripletDensity > 0.7)
+    add("up", "slight", "Lists of three keep appearing", `${triplets} “this, that and the other” construction${triplets === 1 ? "" : "s"} — ${tripletDensity.toFixed(1)} per 100 words.`);
+  if (dashDensity > 0.8)
+    add("up", "slight", "Heavy use of dashes", `${dashes} dash-set asides, ${dashDensity.toFixed(1)} per 100 words.`);
+  if (shortFrac > 0.18 && lengths.length > 5)
+    add("down", "slight", "Short sentences break the flow", `${shortSents} of ${lengths.length} sentences are under seven words.`);
+
+  const paraStats = paras.map(paraScore);
+  const openerParas = paraStats.filter(p => p.opener).length;
+  if (paras.length >= 3 && openerParas >= 2 && openerParas / paras.length >= 0.4)
+    add("up", "moderate", "Paragraph transitions look formulaic",
+      `${openerParas} of ${paras.length} paragraphs open with a stock connector such as “moreover” or “therefore”.`);
+  const readability = readabilityScore(toks, lengths);
+  const variation = 100 - uniformity;
+
+  const rank = { strong: 0, moderate: 1, slight: 2 };
+  F.sort((a, b) => rank[a.strength] - rank[b.strength] || (a.dir === "up" ? -1 : 1));
+
+  return {
+    words: nWords, chars: text.length, sentences: sents.length, paragraphs: paras.length,
+    unique: new Set(toks).size, avgLen: mean, minLen: lengths.length ? Math.min(...lengths) : 0,
+    maxLen: lengths.length ? Math.max(...lengths) : 0, readMin: Math.max(1, Math.round(nWords / 225)),
+    ai, naturalness, repetition, uniformity, diversity, band, confidence,
+    variation, readability, paraStats,
+    lengths, factors: F, connectors: found, connHits, cv
+  };
+}
+
+/* ============================================================
+   2. WORD-LEVEL DIFF
+   ============================================================ */
+const dtok = s => s.match(/\s+|[^\s]+/g) || [];
+
+function lcsDiff(a, b) {
+  const n = a.length, m = b.length;
+  if (!n) return b.map(t => ({ t: "ins", v: t }));
+  if (!m) return a.map(t => ({ t: "del", v: t }));
+  if (n * m > 1600000) return [{ t: "del", v: a.join("") }, { t: "ins", v: b.join("") }];
+  const dp = new Int32Array((n + 1) * (m + 1)), W = m + 1;
+  for (let i = n - 1; i >= 0; i--)
+    for (let j = m - 1; j >= 0; j--)
+      dp[i * W + j] = a[i] === b[j] ? dp[(i + 1) * W + j + 1] + 1
+        : Math.max(dp[(i + 1) * W + j], dp[i * W + j + 1]);
+  const out = []; let i = 0, j = 0;
+  const push = (t, v) => { const l = out[out.length - 1]; if (l && l.t === t) l.v += v; else out.push({ t, v }); };
+  while (i < n && j < m) {
+    if (a[i] === b[j]) { push("eq", a[i]); i++; j++; }
+    else if (dp[(i + 1) * W + j] >= dp[i * W + j + 1]) { push("del", a[i]); i++; }
+    else { push("ins", b[j]); j++; }
+  }
+  while (i < n) push("del", a[i++]);
+  while (j < m) push("ins", b[j++]);
+  return out;
+}
+
+function diffTexts(oldT, newT) {
+  const A = oldT.split(/\n\s*\n/), B = newT.split(/\n\s*\n/);
+  // Pair paragraphs only when the rewrite kept the same paragraph count;
+  // that keeps long documents fast without mis-aligning restructured ones.
+  if (A.length < 2 || A.length !== B.length || A.length > 60)
+    return lcsDiff(dtok(oldT), dtok(newT));
+  const out = [];
+  for (let k = 0; k < A.length; k++) {
+    if (k) out.push({ t: "eq", v: "\n\n" });
+    if (A[k] === B[k]) out.push({ t: "eq", v: A[k] });
+    else lcsDiff(dtok(A[k]), dtok(B[k])).forEach(d => out.push(d));
+  }
+  return out;
+}
+/* ============================================================
+   3. APP
+   ============================================================ */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const KEY = "humantext.v1";
+const MIN_WORDS = 15;
+const MSG = {
+  empty: "Please enter some text first.",
+  short: "Add a little more text for a more useful analysis.",
+  generic: "Something went wrong. Please try again."
+};
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const titleFrom = t => {
+  const words = String(t || "").trim().replace(/\s+/g, " ").split(" ").filter(Boolean);
+  if (!words.length) return "Untitled";
+  const s = words.slice(0, 7).join(" ");
+  return (s.length > 52 ? s.slice(0, 50) : s) + (words.length > 7 || s.length > 52 ? "…" : "");
+};
+
+const STYLES = [
+  { id: "student", name: "Natural Student", desc: "Someone who understands the topic explaining it in their own words.",
+    prompt: "Rewrite the text so it sounds like a student who genuinely understands the material, explaining it in their own words: natural and unforced, neither stiff nor too polished or formulaic. If the text is Indonesian, use natural, well-formed Indonesian that is easy to read (bahasa yang baik tetapi tidak kaku, tanpa jargon berlebihan). Vary sentence length naturally, use ordinary transitions instead of stock connectors, and avoid repeating phrases or sentence openings. Keep the original meaning, every fact, number, name of people and institutions, key term, quotation and reference exactly as given. Do not add facts or sources, do not change the author's point, do not add grammar mistakes or typos on purpose, and make no claim about detectors or authorship." },
+  { id: "casual", name: "Casual Professional", desc: "Relaxed but competent, the register of a good work email.",
+    prompt: "Rewrite the text in a relaxed professional register: direct, confident, conversational without being sloppy. Contractions are welcome. Cut hedging and filler, keep the substance and every factual detail intact." },
+  { id: "academic", name: "Academic but Natural", desc: "Scholarly register, minus the stiffness and the filler.",
+    prompt: "Rewrite the text in an academic register that still reads like a person wrote it. Keep scholarly precision, hedging where the evidence requires it, and all terminology and citations. Remove template connectors, padded noun phrases and sentences that say nothing. Vary sentence length." },
+  { id: "simple", name: "Simple & Clear", desc: "Plain words, shorter sentences, no ornamental jargon.",
+    prompt: "Rewrite the text as plainly as the subject allows. Prefer short common words, break long sentences apart, cut jargon that is not doing real work, and keep every fact, figure and citation exactly as given. Do not oversimplify technical meaning." },
+  { id: "formal", name: "Formal", desc: "Precise and impersonal, for reports and official writing.",
+    prompt: "Rewrite the text in a formal register suitable for an official report: precise, impersonal, no contractions or colloquialism. Keep it readable — formal does not mean convoluted. Preserve all facts, figures, names and citations." },
+  { id: "custom", name: "Custom", desc: "Describe the voice you want yourself.", prompt: "" }
+];
+
+const SAMPLES = {
+  en: "In today's rapidly evolving digital landscape, online learning has become an increasingly important component of higher education. Moreover, it offers students a level of flexibility that traditional classroom instruction cannot easily provide. Furthermore, institutions are able to reach learners who would otherwise be excluded by geography, cost, or scheduling constraints. However, the transition to digital delivery also presents a number of significant challenges. It is important to note that student engagement tends to decline in environments that lack direct interaction. Additionally, reliable access to devices and connectivity remains unevenly distributed across populations. Therefore, institutions must invest in robust support structures, comprehensive training, and seamless technical infrastructure. In conclusion, online learning plays a crucial role in the future of education, but its success ultimately depends on careful implementation, sustained investment, and a commitment to equitable access for all learners.",
+  id: "Dalam era digital yang berkembang pesat, pembelajaran daring telah menjadi bagian penting dari pendidikan tinggi. Selain itu, metode ini memberikan fleksibilitas yang tidak dapat disediakan oleh perkuliahan tatap muka. Oleh karena itu, banyak institusi mulai mengembangkan program daring secara komprehensif. Namun demikian, peralihan ke pembelajaran digital juga menghadirkan sejumlah tantangan yang signifikan. Penting untuk dicatat bahwa keterlibatan mahasiswa cenderung menurun dalam lingkungan yang minim interaksi langsung. Di sisi lain, akses terhadap perangkat dan jaringan internet masih belum merata di berbagai daerah. Dengan demikian, institusi perlu menyiapkan infrastruktur yang memadai, pelatihan yang menyeluruh, dan dukungan teknis yang berkelanjutan. Secara keseluruhan, pembelajaran daring memainkan peran penting dalam masa depan pendidikan, tetapi keberhasilannya sangat bergantung pada perencanaan yang matang, investasi yang konsisten, dan komitmen terhadap pemerataan akses bagi seluruh mahasiswa."
+};
+const ANS_SAMPLES = {
+  en: {
+    q: "Explain how online learning affects student motivation, and give one example.",
+    a: "Online learning is very important in today's world. It gives students many benefits, such as flexibility. However, motivation can drop when students have less interaction. Low motivation makes students less engaged in class. Teachers need to make classes more interesting. In conclusion, online learning affects student motivation in many ways.",
+    idea: "I think motivation drops mostly because there is nobody around to study with. For example, I kept postponing my statistics course because nobody reminded me."
+  },
+  id: {
+    q: "Jelaskan dampak pembelajaran daring terhadap motivasi belajar mahasiswa, dan berikan satu contoh dari pengalaman belajar.",
+    a: "Pembelajaran daring sangat penting di era digital ini. Pembelajaran daring memberikan banyak hal positif bagi mahasiswa. Mahasiswa bisa belajar di mana saja dan kapan saja. Namun, pembelajaran daring juga punya tantangan. Motivasi belajar mahasiswa bisa menurun karena kurang interaksi. Motivasi belajar yang menurun membuat mahasiswa malas mengikuti kuliah. Oleh karena itu, dosen perlu membuat kelas lebih menarik. Dapat disimpulkan bahwa pembelajaran daring berdampak pada motivasi belajar mahasiswa.",
+    idea: "Menurut saya motivasi turun terutama karena tidak ada teman belajar. Contohnya, saya sering menunda tugas statistika karena tidak ada yang mengingatkan."
+  }
+};
+const REF_SAMPLE = "Rahman Ali and Putri Sari, 2021, 'Pembelajaran daring di perguruan tinggi', Jurnal Teknologi Pendidikan, volume 12 nomor 3, halaman 45-60\n\nWidodo, Budi. 2019. Motivasi Belajar Mahasiswa. Penerbit Nusantara, Bandung.\n\nLee, J., Kim, H. and Park, S. (2020) Online engagement in university courses, Journal of Learning Studies 8(2), pp. 101-118, doi 10.0000/sample";
+
+const SPECIMENS = {
+  even: {
+    caption: "Four sentences, eleven to thirteen words each. The rhythm never changes — the commonest pattern in machine-written prose.",
+    s: [["Digital literacy has become an essential skill for students in higher education today.", 13],
+        ["It allows learners to evaluate sources critically and to organise information effectively.", 12],
+        ["Universities have responded by embedding training into their foundation programmes.", 10],
+        ["This approach ensures that every student begins with a shared baseline of competence.", 13]] },
+  varied: {
+    caption: "Two words, then twenty-two. Uneven rhythm is what a person sounds like while they are still thinking.",
+    s: [["Digital literacy is a skill students are assumed to have.", 10],
+        ["Most do not — at least not the part that matters, which is working out whether a source is worth citing at all.", 23],
+        ["Foundation courses try to fix this in a week.", 9],
+        ["A week.", 2],
+        ["Whether that helps depends almost entirely on who is teaching it.", 11]] }
+};
+
+/* ---------- storage ---------- */
+const DEFAULTS = { theme: "system", saveHistory: true, storeText: true, storeRewrite: true, saveDrafts: true, defStyle: "student", defLang: "same" };
+const DKEY = KEY + ".drafts";
+let settings = { ...DEFAULTS };
+let history = [];
+
+function load() {
+  try {
+    const s = localStorage.getItem(KEY + ".settings");
+    if (s) settings = { ...DEFAULTS, ...JSON.parse(s) };
+  } catch (e) { }
+  try {
+    const h = localStorage.getItem(KEY + ".history");
+    history = h ? JSON.parse(h) : [];
+    if (!Array.isArray(history)) history = [];
+  } catch (e) { history = []; }
+}
+function saveSettings() { try { localStorage.setItem(KEY + ".settings", JSON.stringify(settings)); } catch (e) { } }
+function saveHistory() {
+  try { localStorage.setItem(KEY + ".history", JSON.stringify(history.slice(0, 80))); }
+  catch (e) { toast("History is full — older entries were dropped."); history = history.slice(0, 20); }
+}
+function pushHistory(entry) {
+  if (!settings.saveHistory) return;
+  history.unshift({ id: uid(), at: Date.now(), ...entry });
+  saveHistory();
+}
+const histTitle = h => h.title || titleFrom(h.preview || h.text || h.rewrite || "");
+
+/* ---------- misc ---------- */
+let toastT;
+function toast(msg) {
+  let el = $("#toast");
+  if (!el) { el = document.createElement("div"); el.id = "toast"; el.className = "toast"; el.setAttribute("role", "status"); document.body.appendChild(el); }
+  el.textContent = msg; el.style.display = "block";
+  clearTimeout(toastT); toastT = setTimeout(() => { el.style.display = "none"; }, 2800);
+}
+async function copy(text, what) {
+  try { await navigator.clipboard.writeText(text); toast(what + " copied."); return; } catch (e) { }
+  try {
+    const ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove();
+    toast(what + " copied.");
+  } catch (e) { toast("Copying was blocked. Select the text and copy it manually."); }
+}
+async function download(filename, data) {
+  if (!dlFn) { toast("Downloads are unavailable here — use Copy instead."); return; }
+  try { await dlFn.save({ filename, data }); toast("Saved."); }
+  catch (e) {
+    const c = (e && e.code) || "";
+    toast(c === "declined" ? "Download cancelled." : "The file could not be saved — use Copy instead.");
+  }
+}
+const fmtDate = ts => new Date(ts).toLocaleString(undefined, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+const bandWord = b => b === "high" ? "Higher AI-like patterns" : b === "mid" ? "Medium AI-like patterns" : "Low AI-like patterns";
+const bandShort = b => b === "high" ? "Higher" : b === "mid" ? "Medium" : "Low";
+const bandVar = b => b === "high" ? "var(--red)" : b === "mid" ? "var(--amber)" : "var(--green)";
+
+/* in-page dialogs (native confirm/prompt can be blocked inside a framed page) */
+function modal({ title, message, value, okLabel }) {
+  return new Promise(resolve => {
+    const prev = document.activeElement;
+    const hasInput = value !== undefined;
+    const back = document.createElement("div");
+    back.className = "modal-back";
+    back.innerHTML = `<div class="modal" role="dialog" aria-modal="true" aria-labelledby="mdTitle">
+      <h2 class="panel-title" id="mdTitle" style="font-size:1.05rem;margin-bottom:.35rem">${esc(title)}</h2>
+      ${message ? `<p style="color:var(--ink-2);font-size:.9rem;margin:0 0 .9rem">${esc(message)}</p>` : ""}
+      ${hasInput ? `<input type="text" id="mdInput" maxlength="120" style="width:100%;margin-bottom:.9rem" aria-label="${esc(title)}">` : ""}
+      <div class="btn-row" style="justify-content:flex-end"><button type="button" class="btn btn-sm" data-r="0">Cancel</button><button type="button" class="btn btn-sm btn-primary" data-r="1">${esc(okLabel || "OK")}</button></div></div>`;
+    document.body.appendChild(back);
+    const input = back.querySelector("#mdInput");
+    if (input) input.value = value;
+    const done = ok => {
+      const v = hasInput ? (ok ? input.value.trim() : null) : ok;
+      back.remove(); document.removeEventListener("keydown", onKey, true);
+      if (prev && prev.focus) prev.focus();
+      resolve(v);
+    };
+    const onKey = e => {
+      if (e.key === "Escape") { e.preventDefault(); done(false); }
+      else if (e.key === "Enter" && input && document.activeElement === input) { e.preventDefault(); done(true); }
+      else if (e.key === "Tab") {
+        const f = [...back.querySelectorAll("input,button")];
+        const i = f.indexOf(document.activeElement);
+        const n = e.shiftKey ? (i <= 0 ? f.length - 1 : i - 1) : (i === f.length - 1 ? 0 : i + 1);
+        e.preventDefault(); f[n].focus();
+      }
+    };
+    document.addEventListener("keydown", onKey, true);
+    back.addEventListener("click", e => {
+      if (e.target === back) return done(false);
+      const r = e.target.closest("[data-r]");
+      if (r) done(r.dataset.r === "1");
+    });
+    (input || back.querySelector('[data-r="1"]')).focus();
+    if (input) input.select();
+  });
+}
+const askConfirm = (title, message, okLabel) => modal({ title, message, okLabel });
+const askText = (title, value) => modal({ title, value, okLabel: "Save" });
+
+/* language for feedback */
+const ID_HINT = new Set("yang dan di ke dari untuk pada dengan adalah itu ini akan telah sudah dapat tidak dalam oleh karena bahwa jika maka juga atau sebagai serta para lebih saya kami mereka".split(" "));
+const EN_HINT = new Set("the and of to in is are was were for with that this it as on be by not or from which have has".split(" "));
+function detectLang(text) {
+  let id = 0, en = 0;
+  wordsOf(text || "").forEach(w => { if (ID_HINT.has(w)) id++; if (EN_HINT.has(w)) en++; });
+  return id > en ? "id" : "en";
+}
+let fb = "en";
+function setFb(sample) { fb = settings.defLang === "Indonesian" ? "id" : settings.defLang === "English" ? "en" : detectLang(sample); }
+const tr = (en, id) => fb === "id" ? id : en;
+const fbName = () => fb === "id" ? "Indonesian" : "English";
+
+/* ---------- drafts ---------- */
+let draftT;
+function collectDrafts() {
+  return { editor: editor.value, ansQ: $("#ansQ").value, ansA: $("#ansA").value, refSrc: $("#refSrc").value,
+    refText: $("#refText").value, refList: $("#refList").value, stu: { q: stu.q, idea: stu.idea, a: stu.a } };
+}
+function saveDrafts() {
+  clearTimeout(draftT);
+  draftT = setTimeout(() => {
+    if (!settings.saveDrafts) return;
+    try { localStorage.setItem(DKEY, JSON.stringify(collectDrafts())); } catch (e) { }
+  }, 400);
+}
+function restoreDrafts() {
+  if (!settings.saveDrafts) return;
+  try {
+    const d = JSON.parse(localStorage.getItem(DKEY) || "null");
+    if (!d) return;
+    editor.value = d.editor || ""; $("#ansQ").value = d.ansQ || ""; $("#ansA").value = d.ansA || "";
+    $("#refSrc").value = d.refSrc || ""; $("#refText").value = d.refText || ""; $("#refList").value = d.refList || "";
+    if (d.stu) { stu.q = d.stu.q || ""; stu.idea = d.stu.idea || ""; stu.a = d.stu.a || ""; }
+  } catch (e) { }
+}
+async function clearDrafts() {
+  if (!(await askConfirm("Clear all saved drafts?", "This empties the editor and every input box in the app. It cannot be undone.", "Clear drafts"))) return;
+  try { localStorage.removeItem(DKEY); } catch (e) { }
+  editor.value = ""; $("#ansQ").value = ""; $("#ansA").value = ""; $("#refSrc").value = ""; $("#refText").value = ""; $("#refList").value = "";
+  stu.q = stu.idea = stu.a = ""; stu.res = null; stu.shown = false; stu.improve = null; stu.step = 1; stu.max = 1;
+  state.paraCtx = null; updateCtxBar(); updateCounts(); ansCounts(); state.analysis = null; renderDetector();
+  state.rewrite = null; renderCompare(); state.coach = null; renderCoach();
+  ans.res = null; $("#ansAnalysis").innerHTML = ""; ans.improve = null; $("#ansImproveOut").innerHTML = "";
+  $("#refOut").innerHTML = ""; $("#refCheckOut").innerHTML = ""; refState = null;
+  if (page === "student") renderStudent();
+  toast("Saved drafts cleared.");
+}
+
+/* ---------- theme ---------- */
+function applyTheme() {
+  const t = settings.theme;
+  if (t === "system") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.setAttribute("data-theme", t);
+  $("#themeLabel").textContent = t === "system" ? "System theme" : t === "light" ? "Light theme" : "Dark theme";
+  $$("[data-theme-set]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.themeSet === t)));
+}
+$("#themeBtn").onclick = () => {
+  const order = ["system", "light", "dark"];
+  settings.theme = order[(order.indexOf(settings.theme) + 1) % 3];
+  applyTheme(); saveSettings();
+};
+$$("[data-theme-set]").forEach(b => b.onclick = () => { settings.theme = b.dataset.themeSet; applyTheme(); saveSettings(); });
+
+/* ---------- routing ---------- */
+let booted = false;
+const editorHost = $("#editorHost");
+const editorWrap = editorHost.firstElementChild;
+const editor = $("#editor");
+let page = "home";
+
+function go(name) {
+  page = name;
+  $$(".page").forEach(p => p.classList.toggle("is-active", p.id === "page-" + name));
+  $$(".rail button").forEach(b => b.setAttribute("aria-current", b.dataset.go === name ? "page" : "false"));
+  const slot = document.querySelector('.editor-slot[data-slot="' + name + '"]');
+  if (slot) slot.appendChild(editorWrap); else editorHost.appendChild(editorWrap);
+  if (name === "history") renderHistory();
+  if (name === "student") renderStudent();
+  if (name === "coach") renderCoach();
+  refreshAiNotes();
+  window.scrollTo(0, 0);
+  if (booted) { const p = $("#page-" + name); if (p) p.focus({ preventScroll: true }); }
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-go]");
+  if (b) { e.preventDefault(); go(b.dataset.go); return; }
+  const s = e.target.closest("[data-scroll]");
+  if (s) { const t = document.getElementById(s.dataset.scroll); if (t) t.scrollIntoView({ behavior: "smooth", block: "start" }); }
+});
+
+/* ---------- editor ---------- */
+function updateCounts() {
+  const t = editor.value;
+  const w = wordsOf(t).length;
+  $("#cWords").textContent = w.toLocaleString();
+  $("#cChars").textContent = t.length.toLocaleString();
+  $("#cSents").textContent = t.trim() ? splitSentences(t).length.toLocaleString() : "0";
+  $("#cRead").textContent = Math.max(w ? 1 : 0, Math.round(w / 225));
+}
+function updateCtxBar() {
+  const c = state.paraCtx;
+  $("#ctxBar").hidden = !c;
+  if (c) $("#ctxN").textContent = c.index;
+}
+editor.addEventListener("input", () => { updateCounts(); saveDrafts(); });
+$("#ctxRestore").onclick = () => {
+  const c = state.paraCtx; if (!c) return;
+  editor.value = c.full; state.paraCtx = null; updateCtxBar(); updateCounts(); state.rewrite = null; renderCompare(); saveDrafts();
+  toast("Full draft restored.");
+};
+$("#clearBtn").onclick = async () => {
+  if (editor.value) {
+    const msg = state.paraCtx ? "You are working on a single paragraph. The full draft will not be restored if you clear now." : "";
+    if (!(await askConfirm("Clear the editor?", msg, "Clear"))) return;
+  }
+  editor.value = ""; state.paraCtx = null; updateCtxBar(); updateCounts(); state.analysis = null; renderDetector();
+  state.rewrite = null; renderCompare(); state.coach = null; renderCoach(); saveDrafts(); editor.focus();
+};
+$("#copyTextBtn").onclick = () => editor.value.trim() ? copy(editor.value, "Text") : toast("Nothing to copy yet.");
+$("#sampleBtn").onclick = () => {
+  const id = (navigator.language || "en").toLowerCase().startsWith("id");
+  editor.value = SAMPLES[id ? "id" : "en"];
+  updateCounts(); saveDrafts(); toast("Sample loaded — press “Analyze text”.");
+};
+$("#analyzeBtn").onclick = () => { go("detector"); runAnalysis(); };
+$("#naturalBtn").onclick = () => { if (page === "rewriter") doRewrite(); else go("rewriter"); };
+
+/* ---------- state ---------- */
+const state = { analysis: null, analyzedText: "", rewrite: null, streaming: false, showDiff: true, paraCtx: null, coach: null };
+
+/* ---------- detector ---------- */
+function runAnalysis() {
+  const t = editor.value.trim();
+  if (!t) { state.analysis = null; renderDetector(MSG.empty); editor.focus(); return; }
+  if (wordsOf(t).length < MIN_WORDS) { state.analysis = null; renderDetector(MSG.short); return; }
+  try { state.analysis = analyze(t); }
+  catch (e) { console.warn(e); state.analysis = null; renderDetector(MSG.generic); return; }
+  state.analyzedText = t;
+  renderDetector();
+  const a = state.analysis;
+  pushHistory({
+    kind: "analysis", title: titleFrom(t), words: a.words, ai: a.ai, band: a.band,
+    analysis: { ai: a.ai, band: a.band, naturalness: a.naturalness, variation: a.variation, diversity: a.diversity, repetition: a.repetition, readability: a.readability },
+    preview: t.slice(0, 160), text: settings.storeText ? t : null
+  });
+  requestAnimationFrame(() => { const h = $("#verdict"); if (h) h.scrollIntoView({ block: "start", behavior: "smooth" }); });
+}
+function bar(label, val, higherIsBetter, note) {
+  const good = higherIsBetter ? val >= 60 : val <= 35;
+  const bad = higherIsBetter ? val < 35 : val > 65;
+  const cls = good ? "g" : bad ? "r" : "a";
+  return `<div><div class="metric-name"><b>${label}</b><i>${val}<small>/100</small></i></div>
+    <div class="track" role="img" aria-label="${esc(label)} ${val} out of 100"><div class="fill ${cls}" style="width:${val}%"></div></div>
+    <div class="metric-note">${note}</div></div>`;
+}
+
+function renderDetector(msg) {
+  const el = $("#detectorResult");
+  const a = state.analysis;
+  const notice = msg ? `<div class="notice warn" role="alert" style="margin-bottom:1rem">${esc(msg)}</div>` : "";
+  if (!a) {
+    el.innerHTML = notice + `<div class="empty"><strong>No analysis yet</strong>
+      Paste a draft above and press “Analyze text”. Nothing is uploaded — the numbers are computed here in your browser.</div>`;
+    return;
+  }
+  const C = 339.292, dash = C * a.ai / 100;
+  const maxLen = Math.max(...a.lengths, 1);
+  const shown = a.lengths.slice(0, 70);
+  const paras = a.paraStats.slice(0, 40);
+
+  el.innerHTML = notice + `
+  <div class="panel" id="verdict">
+    <div class="verdict">
+      <div class="ring">
+        <svg width="148" height="148" viewBox="0 0 148 148" aria-hidden="true">
+          <circle cx="74" cy="74" r="54" fill="none" stroke="var(--rule)" stroke-width="9"></circle>
+          <circle cx="74" cy="74" r="54" fill="none" stroke="${bandVar(a.band)}" stroke-width="9"
+            stroke-linecap="round" stroke-dasharray="${dash.toFixed(1)} ${C}"></circle>
+        </svg>
+        <div class="ring-val"><b>${a.ai}</b><small>out of 100</small></div>
+      </div>
+      <div>
+        <p class="eyebrow" style="margin-bottom:.4rem">Indicative AI-like patterns</p>
+        <span class="band ${a.band}"><span class="band-dot"></span>${bandWord(a.band)}</span>
+        <h2>This draft shows ${a.band === "high" ? "many" : a.band === "mid" ? "some" : "few"} AI-like patterns</h2>
+        <p>The figure is an indicative estimate built from ${a.sentences} sentences and ${a.words.toLocaleString()} words of your text. It describes the writing, not the writer.</p>
+      </div>
+    </div>
+    ${a.confidence !== "high" ? `<div class="notice warn" style="margin-top:1.1rem"><strong>${a.words} words is ${a.confidence === "low" ? "too short for a reliable read" : "a small sample"}.</strong>
+      ${a.confidence === "low" ? "Below 120 words these statistics are mostly noise, so the figure has been pulled toward the middle. Add more text for a meaningful result." : "Between 120 and 320 words the figure moves a lot with small edits. Treat it loosely."}</div>` : ""}
+    <div class="notice" style="margin-top:1.1rem">AI detection is probabilistic and may produce false positives or false negatives. This result is not proof of authorship.</div>
+  </div>
+
+  <div class="panel">
+    <h2 class="panel-title">Writing analysis</h2>
+    <p class="panel-sub">Six measurements on a 0–100 scale. Indicative, not proof.</p>
+    <div class="metrics">
+      ${bar("AI-like pattern indicator", a.ai, false, "Blends sentence uniformity, formulaic phrasing, repetition and missing personal texture. Lower means fewer of these patterns.")}
+      ${bar("Naturalness", a.naturalness, true, "Variation, vocabulary spread and personal texture taken together.")}
+      ${bar("Sentence variation", a.variation, true, `Sentences average ${a.avgLen.toFixed(1)} words, from ${a.minLen} to ${a.maxLen}. Higher means a more varied rhythm.`)}
+      ${bar("Vocabulary diversity", a.diversity, true, `${a.unique.toLocaleString()} distinct words, measured in 50-word windows so length does not skew it.`)}
+      ${bar("Repetition", a.repetition, false, "Repeated phrases, repeated sentence openings, and how concentrated the content words are.")}
+      ${bar("Readability", a.readability, true, "Estimated from sentence length and how many long words appear. A rough guide, not tied to one language.")}
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2 class="panel-title">Why did we get this result?</h2>
+    <p class="panel-sub">Every finding below is something you can check in your own text.</p>
+    ${a.factors.length ? `<ul class="factors">${a.factors.map(f => `
+      <li><span class="tag ${f.dir}">${f.dir === "up" ? "raises" : "lowers"}</span>
+        <div><strong>${esc(f.title)}</strong><span>${esc(f.detail)}</span></div></li>`).join("")}</ul>`
+      : `<p style="color:var(--ink-2);margin:0">Nothing stood out strongly in either direction. The text sits in the middle of every measurement.</p>`}
+  </div>
+
+  <div class="panel">
+    <h2 class="panel-title">Paragraph analysis</h2>
+    <p class="panel-sub">Naturalness and AI-like pattern for each paragraph. Short paragraphs give less reliable readings.${a.paraStats.length > 40 ? " First 40 shown." : ""}</p>
+    <div class="para-list">${paras.map((p, i) => `
+      <div class="para">
+        <div style="min-width:0">
+          <strong>Paragraph ${i + 1}</strong><span class="pill ${p.band}">AI-like pattern: ${bandShort(p.band)}</span>
+          <div class="para-meta"><span>Naturalness <b>${p.naturalness}</b></span><span>${p.words} words</span><span>${p.sentences} sentence${p.sentences === 1 ? "" : "s"}</span></div>
+          <div class="para-prev">${esc(p.text.slice(0, 120))}</div>
+          ${p.notes.length ? `<div class="para-notes">${esc(p.notes.join(" · "))}</div>` : ""}
+          ${p.reliable ? "" : `<div class="para-notes">Too short for a reliable reading.</div>`}
+        </div>
+        <button class="btn btn-sm" data-review="${i}">Review this paragraph</button>
+      </div>`).join("")}</div>
+  </div>
+
+  <div class="panel">
+    <h2 class="panel-title">Sentence rhythm</h2>
+    <p class="panel-sub">One bar per sentence, scaled to its word count${a.lengths.length > 70 ? " (first 70 shown)" : ""}.</p>
+    <div class="rhythm">${shown.map((n, i) => `<div class="rbar"><em>${i + 1}</em><i style="width:${Math.max(2, n / maxLen * 100)}%;background:${n > maxLen * .75 ? "var(--blue)" : "var(--ink-3)"}"></i></div>`).join("")}</div>
+    <div class="rhythm-legend"><span>Shortest ${a.minLen} words</span><span>Average ${a.avgLen.toFixed(1)}</span><span>Longest ${a.maxLen}</span><span>Spread ${(a.cv * 100).toFixed(0)}% of average</span></div>
+  </div>
+
+  <div class="panel">
+    <h2 class="panel-title">Text statistics</h2>
+    <p class="panel-sub">The raw counts, for reference.</p>
+    <div class="statgrid">
+      <div><b>${a.words.toLocaleString()}</b><small>words</small></div>
+      <div><b>${a.chars.toLocaleString()}</b><small>characters</small></div>
+      <div><b>${a.sentences}</b><small>sentences</small></div>
+      <div><b>${a.paragraphs}</b><small>paragraphs</small></div>
+      <div><b>${a.unique.toLocaleString()}</b><small>distinct words</small></div>
+      <div><b>${a.connHits}</b><small>formulaic phrases</small></div>
+      <div><b>${a.readMin}</b><small>min read</small></div>
+    </div>
+    ${a.connectors.length ? `<p style="font-size:.86rem;color:var(--ink-2);margin:.9rem 0 0">Found: ${a.connectors.slice(0, 10).map(c => `${esc(c.phrase)}${c.count > 1 ? " ×" + c.count : ""}`).join(", ")}${a.connectors.length > 10 ? ", …" : ""}</p>` : ""}
+    <div class="btn-row" style="margin-top:1.1rem">
+      <button class="btn btn-sm" id="copyResultBtn">Copy result</button>
+      <button class="btn btn-sm" data-go="rewriter">Make more natural</button>
+      <button class="btn btn-sm" data-go="coach">Get writing feedback</button>
+    </div>
+  </div>`;
+
+  $("#copyResultBtn").onclick = () => copy(resultText(a), "Result");
+  $$("[data-review]").forEach(b => b.onclick = () => reviewParagraph(+b.dataset.review));
+}
+
+function resultText(a) {
+  return ["HumanText AI — writing analysis", "Date: " + fmtDate(Date.now()), "",
+    `Indicative AI-like patterns: ${a.ai}/100 (${bandWord(a.band).toLowerCase()})`,
+    `Naturalness: ${a.naturalness}/100`, `Sentence variation: ${a.variation}/100`, `Vocabulary diversity: ${a.diversity}/100`,
+    `Repetition: ${a.repetition}/100`, `Readability: ${a.readability}/100`, "",
+    `Words ${a.words} · sentences ${a.sentences} · paragraphs ${a.paragraphs} · distinct words ${a.unique}`,
+    `Sentence length ${a.minLen}–${a.maxLen}, average ${a.avgLen.toFixed(1)}`, "",
+    "Why did we get this result?", ...a.factors.map(f => `- [${f.dir === "up" ? "raises" : "lowers"}] ${f.title}: ${f.detail}`), "",
+    "Paragraph analysis", ...a.paraStats.map((p, i) => `- Paragraph ${i + 1}: naturalness ${p.naturalness}, AI-like pattern ${bandShort(p.band).toLowerCase()}`), "",
+    "AI detection is probabilistic and may produce false positives or false negatives. This result is not proof of authorship."
+  ].join("\n");
+}
+
+function reviewParagraph(i) {
+  const a = state.analysis;
+  if (!a || !a.paraStats[i]) return;
+  state.paraCtx = { full: state.analyzedText, para: a.paraStats[i].text, index: i + 1 };
+  editor.value = a.paraStats[i].text; updateCounts(); state.rewrite = null; renderCompare(); updateCtxBar();
+  go("rewriter"); toast("Paragraph " + (i + 1) + " sent to the Natural Rewriter.");
+}
+
+/* ---------- runtime capabilities ---------- */
+let sampleFn = null, dlFn = null, capsResolved = false, rewriteBlocked = null;
+(async () => {
+  try {
+    if (window.claude && typeof window.claude.use === "function") {
+      sampleFn = await window.claude.use("sample").catch(() => null);
+      dlFn = await window.claude.use("downloads").catch(() => null);
+    }
+  } catch (e) { }
+  capsResolved = true;
+  renderRewriteStatus();
+  renderCompare();
+  refreshAiNotes();
+})();
+
+const ERR = {
+  not_granted: "This page has not been allowed to use Claude, so AI features are unavailable here.",
+  sampling_disabled: "Claude is not available on this account, so AI features are unavailable here.",
+  not_declared: "AI features are not available in this view.",
+  capability_disabled: "AI features are not available in this view.",
+  capability_removed: "AI features are not available in this view.",
+  rate_limited: "Too many requests, or a usage limit was reached. Wait a moment, then try again.",
+  session_expired: "Your session expired. Sign in again and retry.",
+  refused: "Claude could not help with this request. Change what you are asking for and try again.",
+  empty_completion: "Nothing came back. Try a shorter passage.",
+  prompt_too_large: "The text is too long for one request. Try a few paragraphs at a time.",
+  upstream_error: "The connection dropped. Please try again."
+};
+const PERMANENT = ["not_granted", "sampling_disabled", "not_declared", "capability_disabled", "capability_removed"];
+const errText = code => ERR[code] || MSG.generic;
+
+function aiProblem() {
+  if (!capsResolved) return null;
+  if (rewriteBlocked) return rewriteBlocked;
+  if (!sampleFn) return "AI features need Claude access through the artifact runtime and are unavailable in this view. Everything that runs locally still works.";
+  return null;
+}
+function refreshAiNotes() {
+  const p = aiProblem();
+  $$("[data-ainote]").forEach(el => { el.innerHTML = p ? `<div class="notice warn">${esc(p)}</div>` : ""; });
+  $$("[data-ai]").forEach(b => { if (!b.dataset.busy) b.disabled = !!p; });
+  renderRewriteStatus();
+}
+function aiGate() {
+  if (!capsResolved) { toast("Still connecting to Claude — give it a moment and try again."); return false; }
+  const p = aiProblem();
+  if (p) { toast(p); return false; }
+  return true;
+}
+function handleAIError(e) {
+  const code = (e && e.code) || "upstream_error";
+  if (PERMANENT.includes(code)) { rewriteBlocked = ERR[code]; sampleFn = null; refreshAiNotes(); }
+  return errText(code);
+}
+function parseLooseJSON(t) {
+  const s = String(t || "").trim();
+  try { return JSON.parse(s); } catch (e) { }
+  const f = s.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if (f) { try { return JSON.parse(f[1]); } catch (e) { } }
+  const a = s.search(/[\[{]/), b = Math.max(s.lastIndexOf("}"), s.lastIndexOf("]"));
+  if (a >= 0 && b > a) { try { return JSON.parse(s.slice(a, b + 1)); } catch (e) { } }
+  throw { code: "invalid_json" };
+}
+async function askAI(prompt, { json = false, onText, signal, tier = "default" } = {}) {
+  if (new TextEncoder().encode(prompt).length > 62000) throw { code: "prompt_too_large" };
+  const o = { modelTier: tier, cache: false };
+  if (signal) o.signal = signal;
+  if (onText) o.onText = onText;
+  if (json && typeof sampleFn.json === "function") return sampleFn.json(prompt, o);
+  const r = await sampleFn(prompt, o);
+  return json ? parseLooseJSON(r.text) : r;
+}
+async function withBusy(btn, label, fn) {
+  if (!btn) return fn();
+  const html = btn.innerHTML;
+  btn.dataset.busy = "1"; btn.disabled = true; btn.innerHTML = `<span class="spin"></span> ${esc(label)}`;
+  try { return await fn(); }
+  finally { delete btn.dataset.busy; btn.innerHTML = html; btn.disabled = false; refreshAiNotes(); }
+}
+
+/* ---------- style picker ---------- */
+let curStyle = "student", curLang = "same";
+function renderStyles() {
+  $("#stylePicker").innerHTML = STYLES.map(s => `
+    <label class="style-opt"><input type="radio" name="style" value="${s.id}" ${s.id === curStyle ? "checked" : ""}>
+      <strong>${s.name}</strong><small>${s.desc}</small></label>`).join("");
+  const mark = () => $$('input[name="style"]').forEach(x => x.closest(".style-opt").classList.toggle("is-sel", x.checked));
+  $$('input[name="style"]').forEach(r => r.onchange = () => {
+    curStyle = r.value; mark();
+    $("#customWrap").style.display = curStyle === "custom" ? "block" : "none";
+  });
+  mark();
+  $("#customWrap").style.display = curStyle === "custom" ? "block" : "none";
+}
+$("#langSel").onchange = e => { curLang = e.target.value; };
+
+function toneLine(v) {
+  return v <= 20 ? "Tone: clearly formal." : v <= 40 ? "Tone: leaning formal." : v <= 60 ? "Tone: neutral, with no strong lean either way."
+    : v <= 80 ? "Tone: leaning casual and conversational." : "Tone: clearly casual and conversational, while staying correct and clear.";
+}
+function lengthLine(v) {
+  return v <= 20 ? "Length: noticeably shorter, about 25–30% fewer words, by cutting filler and repetition, never facts, figures or citations."
+    : v <= 40 ? "Length: somewhat shorter, about 10–15% fewer words, by trimming filler and repetition."
+    : v <= 60 ? "Length: about the same as the original, within 10%."
+    : v <= 80 ? "Length: somewhat fuller, up to about 15% longer, by spelling out reasoning already implicit in the text. Add no new facts."
+    : "Length: detailed, up to about 30% longer, by clarifying reasoning and connections already in the text. Add no new facts, examples, data or sources.";
+}
+const PERS = {
+  Neutral: "Personality: neutral and unobtrusive.",
+  Personal: "Personality: warm and personal; first person is fine where the original already implies the author's own view.",
+  Student: "Personality: a thoughtful student explaining what they understood, in their own words.",
+  Professional: "Personality: composed, competent and direct."
+};
+
+function buildPrompt(text) {
+  const s = STYLES.find(x => x.id === curStyle);
+  const brief = curStyle === "custom"
+    ? ($("#customInstr").value.trim() || "Make the text read more naturally and clearly.")
+    : s.prompt;
+  return [
+    "You are editing a piece of writing on behalf of its own author. Rewrite the text between the markers.",
+    "",
+    "Rules:",
+    "- Preserve the meaning and every factual claim, number, date, name, quotation, citation and reference exactly as given.",
+    "- Never invent facts, data, sources or citations that are not already in the text.",
+    "- Keep specialised terminology and the order of the argument.",
+    "- Vary sentence length and structure the way a real writer does; drop formulaic connectors and template phrasing.",
+    "- Do not introduce grammatical errors, typos or awkward phrasing on purpose, and do not imitate mistakes.",
+    "- Do not claim or imply anything about who or what wrote the text, and never mention AI detectors.",
+    "- " + lengthLine(+$("#lenRange").value),
+    "- " + toneLine(+$("#toneRange").value),
+    "- " + (PERS[$("#persSel").value] || PERS.Neutral),
+    "- Keep the existing paragraph breaks unless merging or splitting clearly helps the reader.",
+    curLang === "same" ? "- Write in the same language as the original text." : "- Write in " + curLang + ".",
+    "- Reply with the rewritten text only: no preamble, no title, no commentary, no markdown fences.",
+    "",
+    "Style brief: " + brief,
+    "",
+    "---BEGIN TEXT---", text, "---END TEXT---"
+  ].join("\n");
+}
+
+function renderRewriteStatus(msg, kind) {
+  const el = $("#rewriteStatus"), btn = $("#rewriteBtn");
+  if (!el || !btn) return;
+  if (msg) { el.innerHTML = `<div class="notice ${kind || ""}" role="alert">${esc(msg)}</div>`; return; }
+  const p = aiProblem();
+  if (p) {
+    el.innerHTML = `<div class="notice warn"><strong>Rewriting is unavailable in this view.</strong> ${esc(p)} The analyzer still works — it runs entirely in your browser.</div>`;
+    btn.disabled = true;
+  } else { el.innerHTML = ""; if (!state.streaming) btn.disabled = false; }
+}
+
+/* ---------- rewriting ---------- */
+let ctl = null;
+async function doRewrite() {
+  const text = editor.value.trim();
+  if (page !== "rewriter") go("rewriter");
+  if (!text) { renderRewriteStatus(MSG.empty, "warn"); editor.focus(); return; }
+  if (wordsOf(text).length < 5) { renderRewriteStatus(MSG.short, "warn"); return; }
+  if (!capsResolved) { renderRewriteStatus("Still connecting to Claude — give it a moment and press the button again."); return; }
+  if (aiProblem()) { renderRewriteStatus(); return; }
+  const prompt = buildPrompt(text);
+  if (new TextEncoder().encode(prompt).length > 62000) {
+    renderRewriteStatus("That text is too long for a single request. Rewrite it a few paragraphs at a time.", "warn"); return;
+  }
+
+  state.rewrite = { original: text, out: "", done: false, style: curStyle, truncated: false };
+  state.streaming = true;
+  $("#rewriteBtn").disabled = true;
+  $("#rewriteBtn").innerHTML = '<span class="spin"></span> Thinking…';
+  $("#stopBtn").style.display = "";
+  renderRewriteStatus();
+  renderCompare();
+
+  ctl = new AbortController();
+  try {
+    const res = await sampleFn(prompt, {
+      signal: ctl.signal, modelTier: "default", cache: false,
+      onText: ({ text: t }) => {
+        state.rewrite.out = t;
+        streamInto($("#compareWrap"), t);
+        $("#rewriteBtn").innerHTML = '<span class="spin"></span> Writing…';
+      }
+    });
+    state.rewrite.out = res.text.trim();
+    state.rewrite.truncated = res.truncated;
+    state.rewrite.done = true;
+    pushHistory({
+      kind: "rewrite", title: titleFrom(text), words: wordsOf(state.rewrite.out).length, style: STYLES.find(s => s.id === curStyle).name,
+      preview: state.rewrite.out.slice(0, 160),
+      text: settings.storeText ? text : null,
+      rewrite: settings.storeRewrite ? state.rewrite.out : null
+    });
+  } catch (e) {
+    const code = (e && e.code) || "upstream_error";
+    if (code === "cancelled") {
+      if (state.rewrite.out) { state.rewrite.done = true; renderRewriteStatus("Stopped. What arrived before you stopped is shown on the right.", ""); }
+      else { state.rewrite = null; renderRewriteStatus(); }
+    } else {
+      if (e && e.text) { state.rewrite.out = e.text; state.rewrite.done = true; state.rewrite.interrupted = true; }
+      else state.rewrite = null;
+      const m = handleAIError(e);
+      renderRewriteStatus(m, PERMANENT.includes(code) ? "warn" : "err");
+    }
+  } finally {
+    state.streaming = false; ctl = null;
+    $("#rewriteBtn").disabled = !!aiProblem();
+    $("#rewriteBtn").textContent = "Make more natural";
+    $("#stopBtn").style.display = "none";
+    renderCompare();
+  }
+}
+$("#rewriteBtn").onclick = doRewrite;
+$("#stopBtn").onclick = () => { if (ctl) ctl.abort(); };
+
+/* ---------- before / after comparison ---------- */
+function paint(diff, side, show) {
+  if (!show) return esc(side === "L" ? diff.map(d => d.t !== "ins" ? d.v : "").join("") : diff.map(d => d.t !== "del" ? d.v : "").join(""));
+  return diff.map(d => {
+    if (d.t === "eq") return esc(d.v);
+    if (d.t === "del") return side === "L" ? `<del class="del">${esc(d.v)}</del>` : "";
+    return side === "R" ? `<mark class="ins">${esc(d.v)}</mark>` : "";
+  }).join("");
+}
+function streamInto(host, text) {
+  const d = host && host.querySelector('[data-role="R"]');
+  if (d) d.textContent = text;
+}
+/* r = {original, out, done, truncated, interrupted}; cfg = {busy, busyText, leftTitle, rightTitle, onStop, buttons:[{label, cls, fn}], note, after} */
+function compareView(host, r, cfg) {
+  const done = !!r.done && !cfg.busy;
+  let diff = null, added = 0, removed = 0;
+  if (done && r.out) {
+    diff = diffTexts(r.original, r.out);
+    diff.forEach(d => { const n = (d.v.match(/[\p{L}\p{N}]+/gu) || []).length; if (d.t === "ins") added += n; if (d.t === "del") removed += n; });
+  }
+  const lw = wordsOf(r.original).length, rw = wordsOf(r.out || "").length;
+  const btns = done ? (cfg.buttons || []) : [];
+  host.innerHTML = `
+  <div class="panel" style="display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between;padding:.85rem 1.35rem">
+    <div class="diff-legend">
+      ${done ? `<span><span class="swatch" style="background:var(--blue-soft);box-shadow:inset 0 -1px 0 var(--blue)"></span>changed</span>
+      <span><span class="swatch" style="background:var(--red-soft);box-shadow:inset 0 -1px 0 var(--red)"></span>removed</span>
+      <span>${added} words in, ${removed} out</span>` : `<span><span class="spin"></span> ${esc(cfg.busyText || "Writing the natural version…")}</span>${cfg.onStop ? ` <button class="btn btn-sm" data-role="stop">Stop</button>` : ""}`}
+    </div>
+    ${done ? `<label style="display:flex;gap:.45rem;align-items:center;font-size:.85rem;cursor:pointer">
+      <input type="checkbox" data-role="diff" ${state.showDiff ? "checked" : ""} style="accent-color:var(--blue)"> Highlight changes</label>` : ""}
+  </div>
+
+  <div class="compare has-vs">
+    <div class="col"><div class="col-head"><h3>${esc(cfg.leftTitle || "Original")}</h3><small>${lw} words</small></div>
+      <div class="doc" data-role="L">${done ? paint(diff, "L", state.showDiff) : esc(r.original)}</div></div>
+    <div class="vs" aria-hidden="true">vs</div>
+    <div class="col"><div class="col-head"><h3>${esc(cfg.rightTitle || "Natural version")}</h3><small>${rw ? rw + " words" : "…"}</small></div>
+      <div class="doc" data-role="R">${done ? paint(diff, "R", state.showDiff) : esc(r.out || "")}</div></div>
+  </div>
+
+  ${r.truncated ? `<div class="notice warn" style="margin-top:1rem">The answer was cut short at the length limit. Use a shorter passage for a complete version.</div>` : ""}
+  ${r.interrupted ? `<div class="notice err" style="margin-top:1rem">The connection dropped part way. What arrived is shown above — try again for a complete version.</div>` : ""}
+
+  ${done && btns.length ? `<div class="panel" style="margin-top:1rem">
+    <div class="btn-row">${btns.map((b, i) => `<button class="btn ${b.cls || ""}" data-act="${i}">${esc(b.label)}</button>`).join("")}</div>
+    ${cfg.note ? `<p style="font-size:.84rem;color:var(--ink-3);margin:.9rem 0 0">${esc(cfg.note)}</p>` : ""}
+  </div>` : ""}
+  ${done ? (cfg.after || "") : ""}`;
+
+  const dt = host.querySelector('[data-role="diff"]');
+  if (dt) dt.onchange = e => { state.showDiff = e.target.checked; compareView(host, r, cfg); };
+  const st = host.querySelector('[data-role="stop"]');
+  if (st) st.onclick = cfg.onStop;
+  host.querySelectorAll("[data-act]").forEach(b => b.onclick = () => btns[+b.dataset.act].fn());
+}
+
+function replaceOriginal() {
+  const r = state.rewrite;
+  if (!r || !r.out) return;
+  const ctx = state.paraCtx;
+  if (ctx) {
+    const i = ctx.full.indexOf(ctx.para);
+    if (i < 0) { toast("Could not place the paragraph automatically — use Copy Result instead."); return; }
+    editor.value = ctx.full.slice(0, i) + r.out + ctx.full.slice(i + ctx.para.length);
+    state.paraCtx = null; updateCtxBar(); state.rewrite = null; renderCompare();
+    toast("Paragraph replaced in your full draft.");
+  } else {
+    editor.value = r.out; toast("Editor replaced with the natural version.");
+  }
+  updateCounts(); state.analysis = null; renderDetector(); saveDrafts();
+}
+
+function renderCompare() {
+  const w = $("#compareWrap");
+  const r = state.rewrite;
+  if (!r) {
+    w.innerHTML = `<div class="empty"><strong>No rewrite yet</strong>
+      Paste your text above, pick a style, and press “Make more natural”. Your original is kept side by side so you can decide, sentence by sentence, what to accept.</div>`;
+    return;
+  }
+  compareView(w, r, {
+    busy: state.streaming, busyText: "Writing the natural version…",
+    leftTitle: "Original", rightTitle: "Natural version",
+    buttons: [
+      { label: "Copy Result", fn: () => copy(r.out, "Natural version") },
+      { label: "Replace Original", fn: replaceOriginal },
+      { label: "Try Again", fn: doRewrite },
+      { label: "Clear", fn: () => { state.rewrite = null; renderCompare(); } },
+      { label: "Download", fn: () => download("natural-version.txt", r.out) },
+      { label: "Analyze the new version", cls: "btn-quiet", fn: () => { editor.value = r.out; updateCounts(); go("detector"); runAnalysis(); } }
+    ],
+    note: "Read the changes before you accept them. Facts, figures and citations were kept as written, but only you can tell whether each new sentence still says what you meant."
+  });
+}
+
+/* ============================================================
+   ANSWER ANALYSIS (local measurements + optional AI review)
+   ============================================================ */
+const QSTOP = new Set(("jelaskan sebutkan uraikan bagaimana mengapa kenapa apakah apa siapa kapan dimana berikan bandingkan analisis analisislah diskusikan jabarkan deskripsikan tentukan hitunglah contoh " +
+  "explain describe discuss compare contrast analyse analyze evaluate why how what which who when where give state outline define example").split(/\s+/));
+const stemOf = w => w.length <= 4 ? w : w.slice(0, Math.min(6, w.length - 1));
+const REASON_RE = /\b(?:karena|sebab|sehingga|akibatnya|artinya|because|since|therefore|so that|which means|as a result|thus|hence|due to)\b/;
+const EXAMPLE_RE = /\b(?:misalnya|contohnya|contoh|misal|for example|for instance|such as|e\.g\.)|\d/i;
+const VAGUE_SRC = "\\b(?:sangat penting|banyak hal|berbagai hal|dan lain-lain|dan lain sebagainya|dll|dsb|segala sesuatu|pada umumnya|secara umum|very important|many things|a lot of|in general|and so on|everything|things like that|a variety of|numerous)\\b";
+const CONCL_RE = /\b(?:kesimpulan|disimpulkan|jadi|singkatnya|dengan demikian|secara keseluruhan|in conclusion|to sum up|in summary|overall|in short|therefore|to conclude)\b/;
+const SEQ_RE = /\b(?:pertama|kedua|ketiga|selanjutnya|kemudian|selain itu|di sisi lain|namun|sedangkan|first|second|third|next|then|however|in addition|finally)\b/;
+const CITE_RE = /\((?:[^()]*?\b(?:19|20)\d{2}[a-z]?[^()]*)\)|\[\d+(?:\s*[-–,]\s*\d+)*\]/g;
+const contentStems = s => new Set(wordsOf(s).filter(w => w.length >= 4 && !STOP.has(w)).map(stemOf));
+
+function keyTerms(q) {
+  const seen = new Set(), out = [];
+  wordsOf(q).forEach(w => {
+    if (STOP.has(w) || QSTOP.has(w) || w.length < 4 || /^\d+$/.test(w)) return;
+    const s = stemOf(w);
+    if (!seen.has(s)) { seen.add(s); out.push({ word: w, stem: s }); }
+  });
+  return out;
+}
+
+function answerLocal(q, a) {
+  setFb(a);
+  const toks = wordsOf(a), n = toks.length, lower = a.toLowerCase();
+  const sents = splitSentences(a), paras = getParas(a);
+  const lens = sents.map(s => wordsOf(s).length).filter(x => x > 0);
+  const mean = lens.length ? lens.reduce((x, y) => x + y, 0) / lens.length : 0;
+  const terms = keyTerms(q);
+  const aStems = new Set(toks.filter(w => w.length >= 4 && !STOP.has(w)).map(stemOf));
+  const hit = terms.filter(t => aStems.has(t.stem)), miss = terms.filter(t => !aStems.has(t.stem));
+  const ratio = terms.length ? hit.length / terms.length : 0.6;
+  let coverage = pct(Math.min(1, ratio / 0.8));
+  if (n < 40) coverage = Math.min(coverage, 55);
+
+  const qStems = new Set(terms.map(t => t.stem));
+  let onTopic = 0, prev = new Set();
+  sents.forEach(s => {
+    const st = contentStems(s);
+    let ok = [...st].some(x => qStems.has(x));
+    if (!ok) ok = [...st].some(x => prev.has(x));
+    if (ok) onTopic++;
+    prev = st;
+  });
+  const topicShare = sents.length ? onTopic / sents.length : 0;
+  const relevance = terms.length ? pct(0.5 * Math.min(1, ratio / 0.8) + 0.5 * topicShare) : pct(topicShare);
+
+  const firstOnTopic = !terms.length || (sents[0] ? [...contentStems(sents[0])].some(x => qStems.has(x)) : false);
+  const parasOk = n >= 120 ? paras.length >= 2 : sents.length >= 2;
+  const seq = SEQ_RE.test(lower);
+  const concl = sents.length >= 3 && CONCL_RE.test(sents[sents.length - 1].toLowerCase());
+  const overlong = Math.max(0, ...paras.map(p => wordsOf(p).length)) > 220;
+  const structure = pct(0.25 * (firstOnTopic ? 1 : 0) + 0.25 * (parasOk ? 1 : 0) + 0.20 * (seq ? 1 : 0) + 0.15 * (concl ? 1 : 0) + 0.15 * (overlong ? 0 : 1));
+
+  const longFrac = lens.length ? lens.filter(x => x > 35).length / lens.length : 0;
+  const vagueList = lower.match(new RegExp(VAGUE_SRC, "g")) || [];
+  const vaguePer100 = n ? vagueList.length / n * 100 : 0;
+  const clarity = pct(0.4 * clamp01((38 - mean) / 18) + 0.3 * clamp01(1 - longFrac * 3) + 0.3 * clamp01(1 - vaguePer100 / 1.5));
+  const readability = readabilityScore(toks, lens);
+
+  let rep = null; try { rep = analyze(a); } catch (e) { }
+  const checks = [];
+  const C = (id, status, comment) => checks.push({ id, status, comment });
+  C("answers", terms.length ? (ratio >= 0.6 ? "good" : ratio >= 0.35 ? "ok" : "needs_work") : "ok",
+    terms.length ? tr(`Your answer uses ${hit.length} of the ${terms.length} key terms from the question.`, `Jawabanmu memakai ${hit.length} dari ${terms.length} istilah kunci dalam pertanyaan.`)
+      : tr("Add the question to check how well the answer responds to it.", "Tambahkan pertanyaan agar kecocokan jawaban bisa dicek."));
+  C("unexplained", miss.length === 0 ? "good" : miss.length <= 2 ? "ok" : "needs_work",
+    miss.length ? tr(`Not found in your answer: ${miss.slice(0, 6).map(t => t.word).join(", ")}. You may have covered them in other words, so check.`, `Belum ditemukan di jawabanmu: ${miss.slice(0, 6).map(t => t.word).join(", ")}. Mungkin sudah dibahas dengan kata lain, jadi cek lagi.`)
+      : tr("Every key term from the question appears in your answer.", "Semua istilah kunci dari pertanyaan muncul di jawabanmu."));
+  const reasons = (lower.match(new RegExp(REASON_RE.source, "g")) || []).length;
+  C("argument", n < 40 ? "ok" : reasons === 0 ? "needs_work" : reasons < Math.ceil(n / 120) ? "ok" : "good",
+    n < 40 ? tr("Too short to judge the argument.", "Terlalu pendek untuk menilai argumen.")
+      : reasons === 0 ? tr("Few reasoning words (because, so, therefore). Make sure each claim says why.", "Hampir tidak ada kata penalaran (karena, sehingga, oleh sebab itu). Pastikan tiap klaim menjelaskan alasannya.")
+      : tr(`Reasoning words appear ${reasons} time${reasons === 1 ? "" : "s"}. Check that each claim is backed by a reason.`, `Kata penalaran muncul ${reasons} kali. Cek apakah tiap klaim punya alasan.`));
+  const parts = [];
+  parts.push(firstOnTopic ? tr("the opening addresses the question", "pembukanya menyentuh pertanyaan") : tr("the opening does not yet address the question clearly", "pembukanya belum jelas menjawab pertanyaan"));
+  parts.push(concl ? tr("it closes with a conclusion", "ditutup dengan kesimpulan") : tr("there is no closing sentence that pulls it together", "belum ada kalimat penutup yang merangkum"));
+  C("structure", structure >= 70 ? "good" : structure >= 45 ? "ok" : "needs_work", tr(`${paras.length} paragraph${paras.length === 1 ? "" : "s"}; `, `${paras.length} paragraf; `) + parts.join("; ") + ".");
+  C("repetition", n < 40 ? "ok" : !rep ? "ok" : rep.repetition >= 55 ? "needs_work" : rep.repetition >= 30 ? "ok" : "good",
+    n < 40 ? tr("Too short to judge repetition.", "Terlalu pendek untuk menilai pengulangan.")
+      : rep && rep.repetition >= 55 ? tr("Some phrases or sentence openings repeat. Try varying them or merging the repeated points.", "Ada frasa atau awal kalimat yang berulang. Coba variasikan atau gabungkan poin yang sama.")
+      : rep && rep.repetition >= 30 ? tr("A little repetition, worth a look.", "Ada sedikit pengulangan, layak dicek.")
+      : tr("No noticeable repetition.", "Tidak ada pengulangan yang mencolok."));
+  const vu = [...new Set(vagueList)].slice(0, 3);
+  C("generic", vagueList.length >= 3 ? "needs_work" : vagueList.length ? "ok" : "good",
+    vagueList.length ? tr(`General phrases spotted: ${vu.join(", ")}. Replace them with something specific.`, `Frasa yang terlalu umum: ${vu.join(", ")}. Ganti dengan hal yang lebih spesifik.`)
+      : tr("No obviously vague phrases.", "Tidak ada frasa yang jelas terlalu umum."));
+  const hasEx = EXAMPLE_RE.test(a) || /["“”]/.test(a);
+  C("example", hasEx ? "good" : n >= 80 ? "needs_work" : "ok",
+    hasEx ? tr("An example, a figure or a quotation appears.", "Ada contoh, angka, atau kutipan.")
+      : tr("No example spotted. A concrete case would make the point land.", "Belum ada contoh. Kasus yang konkret akan memperjelas poinmu."));
+  const cites = (a.match(CITE_RE) || []).length;
+  C("references", cites ? "ok" : "na",
+    cites ? tr(`${cites} citation${cites === 1 ? "" : "s"} found. Check that each source supports the point beside it.`, `Ditemukan ${cites} sitasi. Cek apakah tiap sumber mendukung poin di sebelahnya.`)
+      : tr("No references in the answer.", "Tidak ada referensi dalam jawaban."));
+  return { scores: { coverage, structure, clarity, relevance, readability }, checks, missingTerms: miss.map(t => t.word), words: n };
+}
+
+const strList = v => Array.isArray(v) ? v.filter(x => typeof x === "string" && x.trim()).map(x => x.trim()).slice(0, 8) : [];
+function mergeAnswer(local, ai) {
+  const res = { scores: { ...local.scores }, checks: local.checks.map(c => ({ ...c })), strengths: [], missing: [], missingTerms: local.missingTerms, aiDone: false };
+  if (!ai || typeof ai !== "object") return res;
+  ["coverage", "structure", "clarity", "relevance"].forEach(k => {
+    const v = Number(ai[k]);
+    if (Number.isFinite(v)) res.scores[k] = Math.round((res.scores[k] + Math.max(0, Math.min(100, v))) / 2);
+  });
+  (Array.isArray(ai.checks) ? ai.checks : []).forEach(c => {
+    if (!c || !["good", "ok", "needs_work", "na"].includes(c.status)) return;
+    const t = res.checks.find(x => x.id === c.id);
+    if (!t) return;
+    t.status = c.status;
+    if (typeof c.comment === "string" && c.comment.trim()) t.comment = c.comment.trim();
+    t.ai = true;
+  });
+  res.strengths = strList(ai.strengths); res.missing = strList(ai.missing); res.aiDone = true;
+  return res;
+}
+
+function answerReviewPrompt(q, a) {
+  return [
+    "You are a writing tutor reviewing a student's answer to a question. You do NOT grade it and you must not give a mark or a pass/fail.",
+    "Write every comment in " + fbName() + ".",
+    "Reply with ONLY a JSON object of exactly this shape:",
+    '{"coverage":0-100,"structure":0-100,"clarity":0-100,"relevance":0-100,',
+    ' "checks":[{"id":"answers|unexplained|argument|structure|repetition|generic|example|references","status":"good|ok|needs_work|na","comment":"..."}],',
+    ' "missing":["..."],"strengths":["..."]}',
+    "",
+    "Include one check for each of the 8 ids:",
+    "- answers: does the answer respond to the question?",
+    "- unexplained: are any parts of the question still not explained?",
+    "- argument: is the argument clear?",
+    "- structure: is the structure sound?",
+    "- repetition: is anything repeated? (status good means no problem)",
+    "- generic: are any sentences too general?",
+    "- example: would an example help?",
+    "- references: are the references given relevant? Use status na if the answer cites none.",
+    "Rules: base everything only on the question and the answer below. Do not add facts and do not supply the missing content. 'missing' lists parts of the question the answer does not address yet, phrased as things to cover. Keep each comment under 30 words. Give 1 to 3 strengths.",
+    "",
+    "QUESTION:", q, "",
+    "---BEGIN ANSWER---", a, "---END ANSWER---"
+  ].join("\n");
+}
+
+function improvePrompt(q, a, idea) {
+  return [
+    "You are helping a student clarify and tidy THEIR OWN answer. Preserve their ideas.",
+    "Write the improved answer in the same language as the student's answer.",
+    "",
+    "QUESTION:", q, "",
+    idea ? "THE STUDENT'S OWN NOTES ON THEIR IDEA (their thinking, to be honoured):\n" + idea + "\n" : "",
+    "---BEGIN ANSWER---", a, "---END ANSWER---", "",
+    "Rules:",
+    "- Keep the student's main idea, point of view, own examples, arguments and conclusion. Do not replace their thinking with a different answer.",
+    "- You may reorder, tighten, fix awkward phrasing, remove repetition and make reasoning that is already there more explicit.",
+    "- Never invent facts, data, examples, sources or citations. Keep every number, name, term, quotation and citation exactly as given.",
+    "- If the answer would benefit from something that is not in the student's text or notes (an example, a definition, a source, a piece of data), do NOT supply it. List it under STILL MISSING instead.",
+    "- Do not add grammar mistakes on purpose. Say nothing about AI detectors or authorship.",
+    "- Keep the length about the same as the student's answer, within 20%.",
+    "",
+    "Output format, exactly: the improved answer text only; then a line containing only ===NOTES===; then a line CHANGES followed by up to 5 lines starting with '-' that say what you changed and why; then a line STILL MISSING followed by lines starting with '-' for things the student could add, or '- Nothing important seems to be missing.' Write the CHANGES and STILL MISSING bullets in " + fbName() + "."
+  ].filter(x => x !== "").join("\n");
+}
+function parseImprove(text) {
+  const [ans, notes = ""] = String(text).split(/\n?[ \t]*===NOTES===[ \t]*\n?/);
+  const bl = s => (s || "").split("\n").map(x => x.replace(/^\s*[-•*]\s*/, "").trim()).filter(Boolean);
+  const ch = notes.match(/CHANGES\s*([\s\S]*?)(?=STILL MISSING|$)/i), ms = notes.match(/STILL MISSING\s*([\s\S]*)$/i);
+  return { out: ans.trim(), changes: ch ? bl(ch[1]) : [], missing: ms ? bl(ms[1]) : [] };
+}
+function notesPanel(p) {
+  if (!p || (!p.changes.length && !p.missing.length)) return "";
+  return `<div class="panel" style="margin-top:1rem">
+    ${p.changes.length ? `<h2 class="panel-title">${tr("What changed", "Yang diubah")}</h2><ul class="bullets">${p.changes.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
+    ${p.missing.length ? `<h2 class="panel-title" style="margin-top:${p.changes.length ? "1.1rem" : "0"}">${tr("Still missing", "Yang masih belum ada")}</h2>
+      <p class="panel-sub">${tr("These were not in your text, so nothing was invented. Add them yourself if they matter.", "Hal-hal ini tidak ada di tulisanmu, jadi tidak ditambahkan. Tambahkan sendiri jika penting.")}</p>
+      <ul class="bullets">${p.missing.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
+  </div>`;
+}
+
+const CHECK_LABEL = () => ({
+  answers: tr("Does the answer respond to the question?", "Apakah jawaban menjawab pertanyaan?"),
+  unexplained: tr("Are any parts of the question still unexplained?", "Apakah ada bagian yang belum dijelaskan?"),
+  argument: tr("Is the argument clear?", "Apakah argumen sudah jelas?"),
+  structure: tr("Is the structure sound?", "Apakah struktur jawaban sudah baik?"),
+  repetition: tr("Is anything repeated?", "Apakah terdapat pengulangan?"),
+  generic: tr("Are any sentences too general?", "Apakah ada kalimat yang terlalu umum?"),
+  example: tr("Would an example help?", "Apakah jawaban membutuhkan contoh?"),
+  references: tr("Are the references relevant?", "Apakah referensi yang diberikan relevan?")
+});
+const STATUS_TAG = { good: ["down", "Good"], ok: ["mid", "Check"], needs_work: ["up", "Needs work"], na: ["na", "n/a"] };
+
+function analysisPanels(res, opt = {}) {
+  const S = res.scores, L = CHECK_LABEL();
+  const sub = opt.aiDone ? "Local measurements combined with a review by Claude." : opt.aiPending ? "Local estimate shown now. The AI review is still on its way." : "Local estimate.";
+  return `
+  <div class="panel">
+    <h2 class="panel-title">Answer analysis</h2>
+    <p class="panel-sub">${sub} Scores are writing indicators from 0 to 100, not an academic grade.</p>
+    <div class="metrics">
+      ${bar("Answer coverage", S.coverage, true, "How much of what the question asks for shows up in the answer.")}
+      ${bar("Structure", S.structure, true, "Opening, order of points and a closing that pulls it together.")}
+      ${bar("Clarity", S.clarity, true, "Sentence length, vague phrases and overlong sentences.")}
+      ${bar("Relevance", S.relevance, true, "How much of the answer stays on the topic of the question.")}
+      ${bar("Readability", S.readability, true, "Estimated from sentence length and long words.")}
+    </div>
+    ${opt.aiPending ? `<div class="thinking" style="margin-top:1rem"><span class="spin"></span> Asking Claude for a closer review…</div>` : ""}
+    ${opt.aiMsg ? `<div class="notice warn" style="margin-top:1rem">${esc(opt.aiMsg)}</div>` : ""}
+  </div>
+  <div class="panel" style="margin-top:1.25rem">
+    <h2 class="panel-title">Checklist</h2>
+    <p class="panel-sub">Eight questions a careful reader would ask${res.aiDone ? "" : ", answered from local measurements"}.</p>
+    <ul class="checks">${res.checks.map(c => { const t = STATUS_TAG[c.status] || STATUS_TAG.ok; return `
+      <li><span class="tag w ${t[0]}">${t[1]}</span><div><strong>${esc(L[c.id])}</strong><span class="c">${esc(c.comment)}</span></div></li>`; }).join("")}</ul>
+  </div>
+  ${res.strengths.length || res.missing.length ? `<div class="panel" style="margin-top:1.25rem">
+    ${res.strengths.length ? `<h2 class="panel-title">${tr("What is working", "Yang sudah baik")}</h2><ul class="bullets">${res.strengths.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
+    ${res.missing.length ? `<h2 class="panel-title" style="margin-top:${res.strengths.length ? "1.1rem" : "0"}">${tr("Not yet covered", "Belum tercakup")}</h2><ul class="bullets">${res.missing.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
+  </div>` : ""}`;
+}
+
+async function analyzeAnswerFlow(q, a, host, store) {
+  const local = answerLocal(q, a);
+  const token = uid(); store.token = token;
+  store.res = mergeAnswer(local, null);
+  const canAI = capsResolved && !aiProblem();
+  host.innerHTML = analysisPanels(store.res, { aiPending: canAI, aiMsg: !canAI && aiProblem() ? "The AI review is unavailable in this view, so this is the local estimate." : "" });
+  if (!canAI) return;
+  try {
+    const ai = await askAI(answerReviewPrompt(q, a), { json: true });
+    if (store.token !== token) return;
+    store.res = mergeAnswer(local, ai);
+    host.innerHTML = analysisPanels(store.res, { aiDone: true });
+  } catch (e) {
+    if (store.token !== token) return;
+    host.innerHTML = analysisPanels(store.res, { aiMsg: handleAIError(e) + " Showing the local estimate only." });
+  }
+}
+
+/* shared improve flow: getO() returns {q, a, idea, host, store, btn, kind, replace} */
+function paintImprove(getO, busy) {
+  const o = getO(), st = o.store;
+  if (!st || !st.res || !o.host) { if (o.host) o.host.innerHTML = ""; return; }
+  compareView(o.host, st.res, {
+    busy, busyText: "Improving your answer…", leftTitle: "Original", rightTitle: "Improved version",
+    onStop: () => { if (st.ctl) st.ctl.abort(); },
+    buttons: [
+      { label: "Copy Result", fn: () => copy(st.res.out, "Improved answer") },
+      { label: "Replace Original", fn: () => o.replace(st.res.out) },
+      { label: "Try Again", fn: () => improveFlow(getO) },
+      { label: "Clear", fn: () => { st.res = null; st.notes = null; o.host.innerHTML = ""; } },
+      { label: "Download", fn: () => download("improved-answer.txt", st.res.out) }
+    ],
+    note: "Compare before you accept. Your ideas were kept; check that each sentence still says what you meant.",
+    after: notesPanel(st.notes)
+  });
+}
+async function improveFlow(getO) {
+  const o = getO(), st = o.store;
+  const msg = checkAnswerInputs(o.q, o.a);
+  if (msg) { o.host.innerHTML = `<div class="notice warn" role="alert">${esc(msg)}</div>`; return; }
+  if (!aiGate()) return;
+  setFb(o.a);
+  const prompt = improvePrompt(o.q, o.a, o.idea);
+  if (new TextEncoder().encode(prompt).length > 62000) { o.host.innerHTML = `<div class="notice warn">${esc(ERR.prompt_too_large)}</div>`; return; }
+  const ctlr = new AbortController();
+  st.ctl = ctlr; st.notes = null;
+  st.res = { original: o.a, out: "", done: false };
+  paintImprove(getO, true);
+  await withBusy(o.btn, "Improving…", async () => {
+    try {
+      const r = await askAI(prompt, { signal: ctlr.signal, onText: ({ text }) => { const p = parseImprove(text); st.res.out = p.out; streamInto(o.host, p.out); } });
+      const p = parseImprove(r.text);
+      st.res.out = p.out; st.res.truncated = r.truncated; st.res.done = true; st.notes = p;
+      pushHistory({ kind: "answer", title: titleFrom(o.q), question: o.q, words: wordsOf(p.out).length, style: o.kind === "student" ? "Student Mode" : "Answer Improver",
+        preview: p.out.slice(0, 160), text: settings.storeText ? o.a : null, rewrite: settings.storeRewrite ? p.out : null });
+      paintImprove(getO, false);
+    } catch (e) {
+      const code = (e && e.code) || "upstream_error";
+      if (code === "cancelled") {
+        if (st.res.out) { st.res.done = true; paintImprove(getO, false); } else { st.res = null; o.host.innerHTML = ""; }
+      } else {
+        const m = handleAIError(e);
+        if (e && e.text && parseImprove(e.text).out) { st.res.out = parseImprove(e.text).out; st.res.done = true; st.res.interrupted = true; paintImprove(getO, false); }
+        else { st.res = null; o.host.innerHTML = `<div class="notice err" role="alert">${esc(m)}</div>`; }
+      }
+    }
+  });
+}
+
+function checkAnswerInputs(q, a) {
+  if (!q && !a) return MSG.empty;
+  if (!q) return "Please enter the question first.";
+  if (!a) return MSG.empty;
+  if (wordsOf(a).length < MIN_WORDS) return MSG.short;
+  return "";
+}
+
+/* ---------- Answer Improver page ---------- */
+const ans = { res: null, improve: null, token: null };
+function ansCounts() {
+  const t = $("#ansA").value, w = wordsOf(t).length;
+  $("#ansWords").textContent = w.toLocaleString();
+  $("#ansSents").textContent = t.trim() ? splitSentences(t).length : 0;
+  $("#ansRead").textContent = Math.max(w ? 1 : 0, Math.round(w / 225));
+}
+const ansGetO = () => ({
+  q: $("#ansQ").value.trim(), a: $("#ansA").value.trim(), idea: "", host: $("#ansImproveOut"), store: (ans.improve = ans.improve || {}),
+  btn: $("#ansImprove"), kind: "answer",
+  replace: t => { $("#ansA").value = t; ansCounts(); saveDrafts(); toast("Your answer was replaced with the improved version."); }
+});
+$("#ansQ").addEventListener("input", saveDrafts);
+$("#ansA").addEventListener("input", () => { ansCounts(); saveDrafts(); });
+$("#ansSample").onclick = () => {
+  const s = ANS_SAMPLES[(navigator.language || "en").toLowerCase().startsWith("id") ? "id" : "en"];
+  $("#ansQ").value = s.q; $("#ansA").value = s.a; ansCounts(); saveDrafts(); toast("Sample loaded — press “Analyze My Answer”.");
+};
+$("#ansCopy").onclick = () => $("#ansA").value.trim() ? copy($("#ansA").value, "Answer") : toast("Nothing to copy yet.");
+$("#ansClear").onclick = async () => {
+  if ($("#ansQ").value || $("#ansA").value) { if (!(await askConfirm("Clear the question and answer?", "", "Clear"))) return; }
+  $("#ansQ").value = ""; $("#ansA").value = ""; ans.res = null; ans.improve = null; ans.token = null;
+  $("#ansAnalysis").innerHTML = ""; $("#ansImproveOut").innerHTML = ""; ansCounts(); saveDrafts();
+};
+$("#ansAnalyze").onclick = () => {
+  const q = $("#ansQ").value.trim(), a = $("#ansA").value.trim();
+  const msg = checkAnswerInputs(q, a);
+  if (msg) { $("#ansAnalysis").innerHTML = `<div class="notice warn" role="alert">${esc(msg)}</div>`; return; }
+  try { analyzeAnswerFlow(q, a, $("#ansAnalysis"), ans); }
+  catch (e) { console.warn(e); $("#ansAnalysis").innerHTML = `<div class="notice err">${MSG.generic}</div>`; }
+};
+$("#ansImprove").onclick = () => improveFlow(ansGetO);
+
+/* ============================================================
+   STUDENT MODE
+   ============================================================ */
+const stu = { step: 1, max: 1, q: "", idea: "", a: "", res: null, shown: false, improve: null, token: null };
+const STU_STEPS = ["Question", "My idea", "My answer", "Analyze", "Improve", "Final version"];
+const stuGetO = () => ({
+  q: stu.q.trim(), a: stu.a.trim(), idea: stu.idea.trim(), host: $("#stuFinal"), store: (stu.improve = stu.improve || {}),
+  btn: $("#stuMake"), kind: "student",
+  replace: t => { stu.a = t; toast("Your answer was replaced with the final version."); saveDrafts(); }
+});
+function stuMove(n) { stu.step = n; stu.max = Math.max(stu.max, n); renderStudent(); window.scrollTo(0, 0); }
+function stuMsg(t) { const m = $("#stuMsg"); if (m) m.innerHTML = t ? `<div class="notice warn" role="alert" style="margin-top:1rem">${esc(t)}</div>` : ""; }
+
+function renderStudent() {
+  $("#stuSteps").innerHTML = STU_STEPS.map((s, i) => {
+    const n = i + 1;
+    const cls = n === stu.step ? "cur" : n < stu.step ? "done reach" : n <= stu.max ? "reach" : "";
+    return `<li><button type="button" class="${cls}" data-stustep="${n}" ${n <= stu.max ? "" : "disabled"} ${n === stu.step ? 'aria-current="step"' : ""}><b>${n < stu.step ? "✓" : n}</b>${s}</button></li>`;
+  }).join("");
+  $$("[data-stustep]").forEach(b => b.onclick = () => { stu.step = +b.dataset.stustep; renderStudent(); });
+  const body = $("#stuBody");
+
+  if (stu.step === 1) {
+    body.innerHTML = `<div class="panel"><h2 class="panel-title">1 · Question</h2>
+      <p class="panel-sub">Paste the question or assignment prompt you are answering.</p>
+      <label class="field caps"><span>Question</span><textarea class="ta" id="stuQ" rows="4" placeholder="Masukkan pertanyaan atau soal..." spellcheck="false"></textarea></label>
+      <div class="btn-row"><button class="btn btn-primary" id="stuNext">Next: my idea</button><button class="btn btn-sm" id="stuSample">Try a sample</button></div><div id="stuMsg"></div></div>`;
+    $("#stuQ").value = stu.q;
+    $("#stuQ").oninput = e => { stu.q = e.target.value; saveDrafts(); };
+    $("#stuNext").onclick = () => { if (!stu.q.trim()) return stuMsg(MSG.empty); stuMove(2); };
+    $("#stuSample").onclick = () => {
+      const s = ANS_SAMPLES[(navigator.language || "en").toLowerCase().startsWith("id") ? "id" : "en"];
+      stu.q = s.q; stu.idea = s.idea; stu.a = s.a; $("#stuQ").value = stu.q; saveDrafts(); toast("Sample loaded for every step.");
+    };
+  } else if (stu.step === 2) {
+    body.innerHTML = `<div class="panel"><h2 class="panel-title">2 · My idea</h2>
+      <p class="panel-sub">What do you already think? Rough notes or a few bullet points are fine. This stays yours: it is used to keep the final version faithful to your thinking, never replaced.</p>
+      <div class="notice" style="margin-bottom:1rem"><strong>Question:</strong> ${esc(stu.q)}</div>
+      <label class="field caps"><span>My idea</span><textarea class="ta" id="stuIdea" rows="6" placeholder="Tulis idemu dengan kata-katamu sendiri..." spellcheck="false"></textarea></label>
+      <div class="btn-row"><button class="btn" id="stuBack">Back</button><button class="btn btn-primary" id="stuNext">Next: my answer</button></div>
+      <p style="font-size:.84rem;color:var(--ink-3);margin:.9rem 0 0">You can leave this empty, but even a few rough lines help the final version stay yours.</p></div>`;
+    $("#stuIdea").value = stu.idea;
+    $("#stuIdea").oninput = e => { stu.idea = e.target.value; saveDrafts(); };
+    $("#stuBack").onclick = () => stuMove(1);
+    $("#stuNext").onclick = () => stuMove(3);
+  } else if (stu.step === 3) {
+    body.innerHTML = `<div class="panel"><h2 class="panel-title">3 · My answer</h2>
+      <p class="panel-sub">Write your answer as well as you can. The next steps will show what could be stronger.</p>
+      <div class="notice" style="margin-bottom:1rem"><strong>Question:</strong> ${esc(stu.q)}</div>
+      <label class="field caps"><span>My answer</span><textarea class="ta" id="stuA" rows="10" placeholder="Masukkan jawaban kamu..." spellcheck="false"></textarea></label>
+      <div class="counts" style="margin-bottom:1rem"><span><b id="stuWords">0</b> words</span></div>
+      <div class="btn-row"><button class="btn" id="stuBack">Back</button><button class="btn btn-primary" id="stuNext">Next: analyze</button></div><div id="stuMsg"></div></div>`;
+    $("#stuA").value = stu.a;
+    const upd = () => { $("#stuWords").textContent = wordsOf(stu.a).length.toLocaleString(); };
+    upd();
+    $("#stuA").oninput = e => { stu.a = e.target.value; stu.res = null; stu.shown = false; upd(); saveDrafts(); };
+    $("#stuBack").onclick = () => stuMove(2);
+    $("#stuNext").onclick = () => {
+      const m = checkAnswerInputs(stu.q.trim(), stu.a.trim());
+      if (m) return stuMsg(m);
+      stuMove(4);
+    };
+  } else if (stu.step === 4) {
+    body.innerHTML = `<div class="panel"><h2 class="panel-title">4 · Analyze</h2>
+      <p class="panel-sub">Check the answer against the question. Local measurements run in your browser; a closer review is added when Claude is available.</p>
+      <div class="btn-row"><button class="btn" id="stuBack">Back</button><button class="btn btn-primary" id="stuRun">Analyze my answer</button>
+        <button class="btn" id="stuNext" ${stu.res ? "" : "disabled"}>Next: what needs improvement</button></div>
+      <div id="stuMsg"></div></div>
+      <div id="stuAnalysis" style="margin-top:1.25rem"></div>`;
+    if (stu.res) $("#stuAnalysis").innerHTML = analysisPanels(stu.res, { aiDone: stu.res.aiDone });
+    $("#stuBack").onclick = () => stuMove(3);
+    $("#stuRun").onclick = async () => {
+      const m = checkAnswerInputs(stu.q.trim(), stu.a.trim());
+      if (m) return stuMsg(m);
+      stuMsg("");
+      try {
+        await withBusy($("#stuRun"), "Analyzing…", () => analyzeAnswerFlow(stu.q.trim(), stu.a.trim(), $("#stuAnalysis"), stu));
+        const nx = $("#stuNext"); if (nx && stu.res) nx.disabled = false;
+      } catch (e) { console.warn(e); stuMsg(MSG.generic); }
+    };
+    $("#stuNext").onclick = () => stuMove(5);
+  } else if (stu.step === 5) {
+    body.innerHTML = `<div class="panel"><h2 class="panel-title">5 · Improve</h2>
+      <p class="panel-sub">Before any final version is written, look at what needs improvement. These are pointers. You decide what to change.</p>
+      <div class="btn-row"><button class="btn" id="stuBack">Back</button><button class="btn btn-primary" id="stuShow">Show what needs improvement</button>
+        <button class="btn" id="stuNext" ${stu.shown ? "" : "disabled"}>Next: final version</button></div></div>
+      <div id="stuImprove" style="margin-top:1.25rem"></div>`;
+    const draw = () => { $("#stuImprove").innerHTML = improvementList(); $("#stuNext").disabled = !stu.shown; };
+    if (stu.shown) draw();
+    $("#stuBack").onclick = () => stuMove(4);
+    $("#stuShow").onclick = () => { if (!stu.res) { stuMove(4); return; } stu.shown = true; draw(); };
+    $("#stuNext").onclick = () => stuMove(6);
+  } else {
+    body.innerHTML = `<div class="panel"><h2 class="panel-title">6 · Final version</h2>
+      <p class="panel-sub">Your ideas, examples, arguments and conclusion are kept. The tool only clarifies and tidies, and lists what is still missing instead of inventing it.</p>
+      ${stu.shown ? "" : `<div class="notice warn" style="margin-bottom:1rem">Open step 5 and press “Show what needs improvement” first.</div>`}
+      <div class="btn-row"><button class="btn" id="stuBack">Back</button><button class="btn btn-primary" id="stuMake" data-ai ${stu.shown ? "" : "disabled"}>Create final version</button>
+        <button class="btn btn-sm" id="stuReset">Start over</button></div>
+      <div data-ainote style="margin-top:.9rem"></div></div>
+      <div id="stuFinal" style="margin-top:1.25rem"></div>`;
+    $("#stuBack").onclick = () => stuMove(5);
+    $("#stuMake").onclick = () => improveFlow(stuGetO);
+    $("#stuReset").onclick = async () => {
+      if (!(await askConfirm("Start over?", "This clears the question, idea, answer and results in Student Mode.", "Start over"))) return;
+      Object.assign(stu, { step: 1, max: 1, q: "", idea: "", a: "", res: null, shown: false, improve: null, token: null }); saveDrafts(); renderStudent();
+    };
+    paintImprove(stuGetO, false);
+    refreshAiNotes();
+    if (!stu.shown) $("#stuMake").disabled = true;
+  }
+}
+function improvementList() {
+  const res = stu.res; if (!res) return "";
+  setFb(stu.a);
+  const L = CHECK_LABEL();
+  const needs = res.checks.filter(c => c.status === "needs_work"), check = res.checks.filter(c => c.status === "ok");
+  let coach = []; try { coach = coachLocal(stu.a).improve; } catch (e) { }
+  const li = (label, txt) => `<li>${label ? `<span class="where">${esc(label)}</span>` : ""}${esc(txt)}</li>`;
+  const none = !needs.length && !check.length && !res.missing.length && !coach.length;
+  return `<div class="panel"><h2 class="panel-title">${tr("What needs improvement", "Yang perlu diperbaiki")}</h2>
+    <p class="panel-sub">${tr("Pointers for you to act on. Nothing has been rewritten.", "Petunjuk untukmu. Belum ada yang ditulis ulang.")}</p>
+    ${none ? `<p style="margin:0;color:var(--ink-2)">${tr("Nothing major stands out. You can go ahead to the final version.", "Tidak ada yang menonjol. Kamu bisa lanjut ke versi final.")}</p>` : ""}
+    ${needs.length ? `<div class="subtle-h">${tr("Needs work", "Perlu diperbaiki")}</div><ul class="bullets">${needs.map(c => li(L[c.id], c.comment)).join("")}</ul>` : ""}
+    ${check.length ? `<div class="subtle-h">${tr("Worth a look", "Layak dicek")}</div><ul class="bullets">${check.map(c => li(L[c.id], c.comment)).join("")}</ul>` : ""}
+    ${res.missing.length ? `<div class="subtle-h">${tr("Not yet covered", "Belum tercakup")}</div><ul class="bullets">${res.missing.map(x => li("", x)).join("")}</ul>` : ""}
+    ${coach.length ? `<div class="subtle-h">${tr("Writing coach notes", "Catatan writing coach")}</div><ul class="bullets">${coach.slice(0, 6).map(c => li(tr("Paragraph ", "Paragraf ") + c.p, c.s)).join("")}</ul>` : ""}
+  </div>`;
+}
+
+/* ============================================================
+   REFERENCE ASSISTANT
+   ============================================================ */
+let refStyle = "APA 7", refState = null, refCtl = null;
+function syncRefStyle() { $$("[data-refstyle]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.refstyle === refStyle))); }
+$$("[data-refstyle]").forEach(b => b.onclick = () => { refStyle = b.dataset.refstyle; syncRefStyle(); });
+$("#refSrc").addEventListener("input", saveDrafts);
+$("#refText").addEventListener("input", saveDrafts);
+$("#refList").addEventListener("input", saveDrafts);
+$("#refSample").onclick = () => { $("#refSrc").value = REF_SAMPLE; saveDrafts(); toast("Sample loaded — these are fictional sources for demonstration."); };
+$("#refClear").onclick = () => { $("#refSrc").value = ""; refState = null; $("#refOut").innerHTML = ""; saveDrafts(); };
+
+function refPrompt(src) {
+  const order = refStyle === "IEEE" ? "Number entries [1], [2], … in the order given." : "Sort entries alphabetically by the first author's surname.";
+  return [
+    "You format reference list entries for a student. Citation style: " + refStyle + ".",
+    "",
+    "Rules:",
+    "- Use ONLY the details the user gave. Never invent or guess authors, years, titles, journals, volumes, pages, DOIs or URLs.",
+    "- If a required element is missing, keep the entry as complete as possible and put a marker such as [year missing] where that element belongs.",
+    "- Do not add sources that were not provided. One entry per source.",
+    "- " + order,
+    "- You cannot show italics, so wrap the parts that should be italic (book titles, journal names, as the style requires) in *asterisks*.",
+    "- Keep names and titles in their original language.",
+    "",
+    "Output format, exactly: the reference list only, one entry per line, no blank lines and no commentary; then a line containing only ===NOTES===; then lines starting with '-' that say what is missing or ambiguous, per entry, in " + fbName() + ". If nothing is missing write '- No missing details spotted.'",
+    "",
+    "---BEGIN SOURCES---", src, "---END SOURCES---"
+  ].join("\n");
+}
+function parseRefOut(text) {
+  const [list, notes = ""] = String(text).split(/\n?[ \t]*===NOTES===[ \t]*\n?/);
+  return { entries: list.split("\n").map(s => s.trim()).filter(Boolean), notes: notes.split("\n").map(x => x.replace(/^\s*[-•*]\s*/, "").trim()).filter(Boolean) };
+}
+const refItalics = s => esc(s).replace(/\*([^*\n]+)\*/g, "<em>$1</em>").replace(/\[([^\]]*missing[^\]]*)\]/gi, "<mark>[$1]</mark>");
+const refPlain = entries => entries.map(e => e.replace(/\*/g, "")).join("\n\n");
+
+function renderRefOut() {
+  const el = $("#refOut"), r = refState;
+  if (!r) { el.innerHTML = ""; return; }
+  el.innerHTML = `<div class="panel"><h2 class="panel-title">${esc(r.style)} reference list</h2>
+    ${r.busy ? `<div class="thinking" style="margin-bottom:.8rem"><span class="spin"></span> Formatting… <button class="btn btn-sm" id="refStop">Stop</button></div>` : `<p class="panel-sub">Check every entry against your sources. Missing details are marked in the list.</p>`}
+    <div class="ref-out" id="refOutList">${r.entries.map(e => `<p>${refItalics(e)}</p>`).join("")}</div>
+    ${!r.busy && r.notes.length ? `<div class="subtle-h">${tr("Notes", "Catatan")}</div><ul class="bullets">${r.notes.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
+    ${!r.busy && r.entries.length ? `<div class="btn-row" style="margin-top:1rem"><button class="btn" id="refCopy">Copy Result</button><button class="btn" id="refToCheck">Use in consistency check</button>
+      <button class="btn" id="refTry">Try Again</button><button class="btn" id="refDl">Download</button><button class="btn btn-quiet" id="refClr">Clear</button></div>` : ""}
+  </div>`;
+  if (r.busy) { $("#refStop").onclick = () => { if (refCtl) refCtl.abort(); }; return; }
+  if (!r.entries.length) return;
+  $("#refCopy").onclick = () => copy(refPlain(r.entries), "References");
+  $("#refToCheck").onclick = () => { $("#refList").value = refPlain(r.entries); saveDrafts(); toast("Reference list copied into the consistency check."); $("#refList").scrollIntoView({ behavior: "smooth", block: "center" }); };
+  $("#refTry").onclick = doFormatRefs;
+  $("#refDl").onclick = () => download("references.txt", refPlain(r.entries));
+  $("#refClr").onclick = () => { refState = null; renderRefOut(); };
+}
+async function doFormatRefs() {
+  const src = $("#refSrc").value.trim();
+  if (!src) { $("#refOut").innerHTML = `<div class="notice warn" role="alert">${MSG.empty}</div>`; return; }
+  if (!aiGate()) return;
+  setFb(src);
+  refState = { style: refStyle, entries: [], notes: [], busy: true };
+  renderRefOut();
+  refCtl = new AbortController();
+  await withBusy($("#refFormat"), "Formatting…", async () => {
+    try {
+      const r = await askAI(refPrompt(src), { signal: refCtl.signal, onText: ({ text }) => { const p = parseRefOut(text); refState.entries = p.entries; renderRefOut(); } });
+      const p = parseRefOut(r.text);
+      refState = { style: refState.style, entries: p.entries, notes: p.notes, busy: false };
+      if (!p.entries.length) refState = null;
+      if (!refState) $("#refOut").innerHTML = `<div class="notice warn">${ERR.empty_completion}</div>`; else renderRefOut();
+    } catch (e) {
+      const code = (e && e.code) || "upstream_error";
+      if (code === "cancelled") { refState = refState && refState.entries.length ? { ...refState, busy: false } : null; renderRefOut(); }
+      else { const m = handleAIError(e); refState = null; $("#refOut").innerHTML = `<div class="notice err" role="alert">${esc(m)}</div>`; }
+    } finally { refCtl = null; }
+  });
+}
+$("#refFormat").onclick = doFormatRefs;
+
+/* ---- citation consistency (runs locally) ---- */
+const SUR = "\\p{Lu}[\\p{L}'’-]+";
+const NOT_SUR = new Set(["figure", "fig", "table", "tabel", "gambar", "chapter", "bab", "section", "eq", "equation", "appendix", "lampiran", "page", "halaman", "hlm", "pp", "no", "vol", "see", "lihat"]);
+function extractCitations(text) {
+  const out = [];
+  const t = text.replace(/\[(\d+)\]\s*[–-]\s*\[(\d+)\]/g, (m, a, b) => `[${a}-${b}]`);
+  let m;
+  const numRe = /\[(\d+(?:\s*[-–,]\s*\d+)*)\]/g;
+  while ((m = numRe.exec(t))) {
+    m[1].split(",").forEach(part => {
+      const r = part.trim().split(/\s*[-–]\s*/).map(x => parseInt(x, 10));
+      if (r.length === 2 && r[1] >= r[0] && r[1] - r[0] < 60) { for (let k = r[0]; k <= r[1]; k++) out.push({ kind: "num", num: k }); }
+      else if (Number.isFinite(r[0])) out.push({ kind: "num", num: r[0] });
+    });
+  }
+  const yearRe = /((?:19|20)\d{2}[a-z]?|n\.d\.)/;
+  const surRe = new RegExp("(" + SUR + ")", "u");
+  const mlaRe = new RegExp("^(" + SUR + ")(?:\\s+(?:and|&|dan)\\s+" + SUR + "|\\s+et\\s+al\\.?)?\\s+(\\d+(?:\\s*[-–]\\s*\\d+)?)$", "u");
+  const parRe = /\(([^()]{2,240})\)/g;
+  while ((m = parRe.exec(t))) {
+    m[1].split(";").forEach(part => {
+      const p = part.trim().replace(/^(?:see also|see|cf\.?|e\.g\.,?|lihat juga|lihat|misalnya)\s+/i, "");
+      const ym = p.match(yearRe);
+      if (ym) {
+        const before = p.slice(0, ym.index), sm = before.match(surRe);
+        if (!sm || NOT_SUR.has(sm[1].toLowerCase())) return;
+        const rest = before.slice(sm.index + sm[1].length).replace(/\s*(?:&|and|dan|et\s+al\.?)\s*/gi, " ");
+        if (!/^[\s,]*(?:\p{Lu}[\p{L}'’.-]*[\s,]*)*$/u.test(rest)) return;
+        out.push({ kind: "ay", sur: sm[1], year: ym[1] });
+      } else {
+        const mm = p.match(mlaRe);
+        if (mm && !NOT_SUR.has(mm[1].toLowerCase())) out.push({ kind: "mla", sur: mm[1], year: null });
+      }
+    });
+  }
+  const narRe = new RegExp("(" + SUR + ")(?:\\s+(?:and|&|dan)\\s+" + SUR + "|\\s+et\\s+al\\.?)?\\s*\\(((?:19|20)\\d{2}[a-z]?|n\\.d\\.)[^)]*\\)", "gu");
+  while ((m = narRe.exec(t))) { if (!NOT_SUR.has(m[1].toLowerCase())) out.push({ kind: "ay", sur: m[1], year: m[2] }); }
+  return out;
+}
+function parseRefs(list) {
+  const lines = list.replace(/\r/g, "").split("\n");
+  const numRx = /^\s*(?:\[(\d+)\]|(\d+)[.)])\s+\S/;
+  const numbered = lines.filter(l => numRx.test(l)).length >= 2;
+  let entries = [];
+  if (numbered) lines.forEach(l => { if (numRx.test(l)) entries.push(l.trim()); else if (l.trim() && entries.length) entries[entries.length - 1] += " " + l.trim(); });
+  else if (/\n\s*\n/.test(list.trim())) entries = list.trim().split(/\n\s*\n/).map(s => s.replace(/\s*\n\s*/g, " ").trim()).filter(Boolean);
+  else entries = lines.map(s => s.trim()).filter(Boolean);
+  return entries.map((t, i) => {
+    const mn = t.match(/^\s*(?:\[(\d+)\]|(\d+)[.)])\s+/);
+    const num = mn ? parseInt(mn[1] || mn[2], 10) : null;
+    const body = mn ? t.slice(mn[0].length) : t;
+    const ym = body.match(/\b((?:19|20)\d{2}[a-z]?)\b|\bn\.d\./);
+    const region = ym && ym.index > 0 && ym.index < 160 ? body.slice(0, ym.index) : body.slice(0, 100);
+    const surnames = new Set((region.match(/\p{Lu}[\p{L}'’-]{1,}/gu) || []).map(s => s.toLowerCase()));
+    return { text: t, num, idx: i + 1, year: ym ? (ym[1] || "n.d.") : null, surnames };
+  });
+}
+function checkConsistency(text, list) {
+  const cites = extractCitations(text), refs = parseRefs(list);
+  const res = { cites: cites.length, refs: refs.length, missing: [], uncited: [], yearMismatch: [], matched: [], notes: [] };
+  const numCites = cites.filter(c => c.kind === "num"), ayCites = cites.filter(c => c.kind !== "num");
+  if (numCites.length) {
+    const refNums = new Map(refs.map((r, i) => [r.num != null ? r.num : i + 1, r]));
+    const seen = new Map();
+    numCites.forEach(c => seen.set(c.num, (seen.get(c.num) || 0) + 1));
+    seen.forEach((cnt, n) => { if (refNums.has(n)) res.matched.push({ label: "[" + n + "]", ref: refNums.get(n).text, count: cnt }); else res.missing.push({ label: "[" + n + "]", count: cnt }); });
+    refs.forEach((r, i) => { const n = r.num != null ? r.num : i + 1; if (!seen.has(n)) res.uncited.push({ label: "[" + n + "]", ref: r.text }); });
+    const order = [...seen.keys()].filter(n => refNums.has(n));
+    for (let i = 1; i < order.length; i++) if (order[i] < order[i - 1]) { res.notes.push(`Numbered styles usually follow the order sources are first cited. Here [${order[i]}] is first cited after [${order[i - 1]}].`); break; }
+  }
+  if (ayCites.length) {
+    const groups = new Map();
+    ayCites.forEach(c => {
+      const k = c.sur.toLowerCase() + "|" + (c.year || "");
+      const g = groups.get(k) || { sur: c.sur, year: c.year, count: 0 }; g.count++; groups.set(k, g);
+    });
+    const used = new Set();
+    const norm = y => (y || "").toLowerCase().replace(/[a-z]$/, "");
+    groups.forEach(g => {
+      const label = g.year ? `${g.sur}, ${g.year}` : g.sur;
+      const cands = refs.filter(r => r.surnames.has(g.sur.toLowerCase()));
+      if (!cands.length) { res.missing.push({ label, count: g.count }); return; }
+      if (!g.year) { cands.forEach(r => used.add(r)); res.matched.push({ label, ref: cands[0].text, count: g.count }); return; }
+      const exact = cands.filter(r => r.year && r.year.toLowerCase() === g.year.toLowerCase());
+      const loose = exact.length ? exact : cands.filter(r => norm(r.year) === norm(g.year));
+      if (loose.length) { loose.forEach(r => used.add(r)); res.matched.push({ label, ref: loose[0].text, count: g.count }); }
+      else { cands.forEach(r => used.add(r)); res.yearMismatch.push({ label, refYears: cands.map(r => r.year || "no year"), ref: cands[0].text, count: g.count }); }
+    });
+    refs.forEach(r => { if (!used.has(r)) res.uncited.push({ label: r.text.slice(0, 70) + (r.text.length > 70 ? "…" : ""), ref: r.text }); });
+  }
+  return res;
+}
+function renderConsistency(res) {
+  const el = $("#refCheckOut");
+  if (!res.cites) { el.innerHTML = `<div class="notice warn" role="alert">No in-text citations were found. Supported forms: (Author, 2020), Author (2020), [1] and (Author 45).</div>`; return; }
+  const ok = !res.missing.length && !res.uncited.length && !res.yearMismatch.length;
+  const sect = (title, sub, items, fmt) => items.length ? `<div class="subtle-h">${title} (${items.length})</div><p class="panel-sub" style="margin-bottom:.4rem">${sub}</p><ul class="bullets">${items.map(fmt).join("")}</ul>` : "";
+  el.innerHTML = `<div class="panel"><h2 class="panel-title">Citation consistency</h2>
+    <p class="panel-sub">${res.cites} citation${res.cites === 1 ? "" : "s"} in the text, ${res.refs} entr${res.refs === 1 ? "y" : "ies"} in the reference list.</p>
+    ${ok ? `<div class="notice" style="border-left-color:var(--green)"><strong>Everything lines up.</strong> Every citation has a matching entry and every listed source is cited.</div>` : ""}
+    ${sect("Cited but missing from the reference list", "No entry in your list matches these citations.", res.missing, m => `<li><b>${esc(m.label)}</b> (cited ${m.count}×)</li>`)}
+    ${sect("Year does not match", "The author is in your list, but with a different year.", res.yearMismatch, m => `<li><b>${esc(m.label)}</b>: the list has ${esc(m.refYears.join(", "))}</li>`)}
+    ${sect("In the reference list but never cited", "Add an in-text citation or remove the entry if it is not used.", res.uncited, m => `<li>${esc(m.label)}</li>`)}
+    ${res.notes.length ? `<div class="subtle-h">Notes</div><ul class="bullets">${res.notes.map(n => `<li>${esc(n)}</li>`).join("")}</ul>` : ""}
+    ${res.matched.length ? `<details class="faq"><summary>Matched (${res.matched.length})</summary><ul class="bullets" style="margin-top:.7rem">${res.matched.map(m => `<li><b>${esc(m.label)}</b> → ${esc(m.ref.slice(0, 110))}${m.ref.length > 110 ? "…" : ""}</li>`).join("")}</ul></details>` : ""}
+    <div class="notice" style="margin-top:1rem">This compares only what you pasted, and matching is approximate. It cannot check that a source exists or that its details are correct.</div>
+  </div>`;
+}
+$("#refCheck").onclick = () => {
+  const t = $("#refText").value.trim(), l = $("#refList").value.trim();
+  if (!t) { $("#refCheckOut").innerHTML = `<div class="notice warn" role="alert">${MSG.empty}</div>`; return; }
+  if (!l) { $("#refCheckOut").innerHTML = `<div class="notice warn" role="alert">Add your reference list first, or use the formatted references above.</div>`; return; }
+  try { renderConsistency(checkConsistency(t, l)); }
+  catch (e) { console.warn(e); $("#refCheckOut").innerHTML = `<div class="notice err">${MSG.generic}</div>`; }
+};
+$("#refUse").onclick = () => {
+  if (!refState || !refState.entries.length) return toast("Format some references above first.");
+  $("#refList").value = refPlain(refState.entries); saveDrafts(); toast("Reference list filled in.");
+};
+
+/* ============================================================
+   WRITING COACH
+   ============================================================ */
+function coachLocal(t) {
+  setFb(t);
+  const paras = getParas(t), out = { good: [], improve: [] };
+  const a = analyze(t);
+  const G = s => out.good.push(s), I = (p, s) => out.improve.push({ p, s });
+  paras.forEach((p, pi) => {
+    const ss = splitSentences(p);
+    ss.forEach((s, si) => {
+      const n = wordsOf(s).length;
+      if (n > 35 && out.improve.filter(x => x.kind === "long").length < 3) { I(pi + 1, tr(`Sentence ${si + 1} runs ${n} words. Consider splitting it so each sentence carries one idea.`, `Kalimat ${si + 1} sepanjang ${n} kata. Coba pecah agar tiap kalimat memuat satu gagasan.`)); out.improve[out.improve.length - 1].kind = "long"; }
+    });
+    const sets = ss.map(contentStems);
+    for (let i = 0; i + 1 < ss.length; i++) {
+      const A = sets[i], B = sets[i + 1];
+      if (A.size < 4 || B.size < 4) continue;
+      let inter = 0; A.forEach(x => { if (B.has(x)) inter++; });
+      if (inter / (A.size + B.size - inter) >= 0.5) { I(pi + 1, tr(`Sentences ${i + 1} and ${i + 2} seem to repeat the same idea. Keep the stronger one or say what the second adds.`, `Kalimat ${i + 1} dan ${i + 2} tampak mengulang gagasan yang sama. Pertahankan yang lebih kuat atau jelaskan tambahan dari yang kedua.`)); break; }
+    }
+  });
+  let withEx = 0, checked = 0;
+  paras.forEach((p, pi) => {
+    if (wordsOf(p).length < 55) return;
+    checked++;
+    if (EXAMPLE_RE.test(p) || /["“”]/.test(p)) withEx++;
+    else I(pi + 1, tr("This paragraph could use an example.", "Paragraf ini bisa diperkuat dengan contoh."));
+    if (!REASON_RE.test(p.toLowerCase())) I(pi + 1, tr("Consider explaining why this point matters.", "Pertimbangkan menjelaskan mengapa poin ini penting."));
+  });
+  if (paras.length >= 2) {
+    let k = 0;
+    paras.forEach((p, pi) => {
+      const m = p.replace(/^[^\p{L}]+/u, "").match(CONN_START);
+      if (m && k < 3) { k++; I(pi + 1, tr(`This paragraph opens with “${m[0]}”. A direct first sentence often reads better.`, `Paragraf ini dibuka dengan “${m[0]}”. Kalimat pembuka yang langsung ke inti sering terbaca lebih enak.`)); }
+    });
+  }
+  out.improve.sort((x, y) => x.p - y.p);
+  if (a.variation >= 55 && a.sentences >= 5) G(tr("Your sentence lengths vary naturally, which gives the text a good rhythm.", "Panjang kalimatmu bervariasi secara alami, sehingga ritme tulisan enak dibaca."));
+  if (a.diversity >= 60) G(tr("Your vocabulary is varied and doesn't keep circling the same words.", "Kosakatamu beragam dan tidak berputar di kata yang sama."));
+  if (checked >= 2 && withEx / checked >= 0.5) G(tr("You back up your points with examples or specifics.", "Kamu mendukung poin dengan contoh atau hal yang spesifik."));
+  if (a.repetition <= 25 && a.words >= 80) G(tr("Little repetition: each sentence mostly adds something new.", "Hampir tidak ada pengulangan: tiap kalimat umumnya menambah hal baru."));
+  if (a.readability >= 70) G(tr("Easy to read: sentences are a comfortable length.", "Mudah dibaca: panjang kalimatnya nyaman."));
+  const first = splitSentences(paras[0] || "")[0] || "", fn = wordsOf(first).length;
+  if (fn >= 6 && fn <= 35) {
+    const cnt = new Map();
+    wordsOf(t).filter(w => w.length > 3 && !STOP.has(w)).forEach(w => { const s = stemOf(w); cnt.set(s, (cnt.get(s) || 0) + 1); });
+    const top = [...cnt.entries()].sort((x, y) => y[1] - x[1]).slice(0, 3).map(x => x[0]);
+    if ([...contentStems(first)].some(s => top.includes(s))) G(tr("Your opening sentence introduces the topic the rest of the text keeps returning to.", "Kalimat pembukamu memperkenalkan topik yang terus dibahas di sisa tulisan."));
+  }
+  return out;
+}
+function coachPrompt(t) {
+  return [
+    "You are a kind, precise writing coach. Give feedback that helps the writer learn. Do NOT rewrite the text and do not supply new content.",
+    "Write all feedback in " + fbName() + ".",
+    "Reply with ONLY a JSON object of exactly this shape:",
+    '{"main_idea":{"clear":"yes|partly|no","comment":"..."},"strengths":["..."],"suggestions":[{"where":"Overall or Paragraph 2","comment":"..."}],"questions":["..."]}',
+    "Rules: 2 to 4 strengths, 3 to 6 suggestions, 1 to 3 questions for the writer to think about. Each item under 30 words. Be concrete and tie each point to the writer's actual text. Typical tone: 'Your main idea is clear.', 'This paragraph could use an example.', 'These two sentences repeat the same idea.', 'Consider explaining why this point matters.' Do not judge whether facts are true. Do not mention AI detectors or authorship.",
+    "",
+    "---BEGIN TEXT---", t, "---END TEXT---"
+  ].join("\n");
+}
+let coachToken = null;
+async function runCoach() {
+  const t = editor.value.trim();
+  if (!t) { renderCoach(MSG.empty); editor.focus(); return; }
+  if (wordsOf(t).length < MIN_WORDS) { renderCoach(MSG.short); return; }
+  let local;
+  try { local = coachLocal(t); } catch (e) { console.warn(e); renderCoach(MSG.generic); return; }
+  const token = uid(); coachToken = token;
+  const canAI = capsResolved && !aiProblem();
+  state.coach = { text: t, local, ai: null, aiState: canAI ? "loading" : "off", aiMsg: "" };
+  renderCoach();
+  if (!canAI) return;
+  try {
+    const j = await askAI(coachPrompt(t), { json: true });
+    if (coachToken !== token) return;
+    state.coach.ai = j && typeof j === "object" ? j : null; state.coach.aiState = state.coach.ai ? "done" : "error";
+  } catch (e) {
+    if (coachToken !== token) return;
+    state.coach.aiState = "error"; state.coach.aiMsg = handleAIError(e);
+  }
+  renderCoach();
+}
+function renderCoach(msg) {
+  const el = $("#coachResult"), c = state.coach;
+  const notice = msg ? `<div class="notice warn" role="alert" style="margin-bottom:1rem">${esc(msg)}</div>` : "";
+  if (!c) {
+    el.innerHTML = notice + `<div class="empty"><strong>No feedback yet</strong>Paste a draft above and press “Get coaching feedback”. You will get notes on what works and what could be clearer, without your text being rewritten.</div>`;
+    return;
+  }
+  setFb(c.text);
+  const ai = c.ai || {}, mi = ai.main_idea || null;
+  const good = [...c.local.good, ...strList(ai.strengths)];
+  const sug = (Array.isArray(ai.suggestions) ? ai.suggestions : []).filter(s => s && typeof s.comment === "string" && s.comment.trim());
+  const qs = strList(ai.questions);
+  const miTxt = mi && typeof mi.comment === "string" && mi.comment.trim() ? mi.comment.trim() : "";
+  const miTag = mi ? ({ yes: ["down", tr("Clear", "Jelas")], partly: ["mid", tr("Partly clear", "Cukup jelas")], no: ["up", tr("Unclear", "Belum jelas")] }[mi.clear] || null) : null;
+  el.innerHTML = notice + `
+  ${c.aiState === "loading" ? `<div class="panel"><div class="thinking"><span class="spin"></span> Asking Claude for deeper feedback… The notes below come from local checks.</div></div>` : ""}
+  ${c.aiState === "error" ? `<div class="notice warn" style="margin-bottom:1rem">${esc(c.aiMsg || MSG.generic)} Showing the local notes only.</div>` : ""}
+  ${miTxt ? `<div class="panel"><h2 class="panel-title">${tr("Your main idea", "Ide utamamu")}</h2><p style="margin:.5rem 0 0">${miTag ? `<span class="tag ${miTag[0]}" style="margin-right:.5rem">${esc(miTag[1])}</span>` : ""}${esc(miTxt)}</p></div>` : ""}
+  <div class="panel" ${miTxt ? 'style="margin-top:1.25rem"' : ""}>
+    <h2 class="panel-title">${tr("What is working", "Yang sudah baik")}</h2>
+    ${good.length ? `<ul class="bullets">${good.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : `<p style="color:var(--ink-2);margin:.4rem 0 0">${tr("Nothing stood out as a clear strength yet. Keep going: the notes below show where to look.", "Belum ada kekuatan yang menonjol. Lihat catatan di bawah untuk tahu bagian mana yang perlu dilihat.")}</p>`}
+  </div>
+  <div class="panel" style="margin-top:1.25rem">
+    <h2 class="panel-title">${tr("Worth improving", "Layak diperbaiki")}</h2>
+    <p class="panel-sub">${tr("Pointers only. You decide what to change.", "Hanya petunjuk. Kamu yang memutuskan apa yang diubah.")}</p>
+    ${c.local.improve.length || sug.length ? `<ul class="bullets">
+      ${c.local.improve.map(x => `<li><span class="where">${tr("Paragraph ", "Paragraf ")}${x.p}</span>${esc(x.s)}</li>`).join("")}
+      ${sug.map(x => `<li><span class="where">${esc(x.where || tr("Overall", "Keseluruhan"))}</span>${esc(x.comment)}</li>`).join("")}</ul>`
+      : `<p style="color:var(--ink-2);margin:.4rem 0 0">${tr("No specific problems were flagged.", "Tidak ada masalah spesifik yang ditandai.")}</p>`}
+  </div>
+  ${qs.length ? `<div class="panel" style="margin-top:1.25rem"><h2 class="panel-title">${tr("Questions to think about", "Pertanyaan untuk direnungkan")}</h2><ul class="bullets">${qs.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}
+  <div class="btn-row" style="margin-top:1.25rem"><button class="btn btn-sm" data-go="rewriter">Try the Natural Rewriter</button><button class="btn btn-sm" data-go="detector">Open the analyzer</button></div>`;
+}
+$("#coachBtn").onclick = runCoach;
+
+/* ============================================================
+   HISTORY
+   ============================================================ */
+const KIND_LABEL = { analysis: "Analysis", rewrite: "Rewrite", answer: "Answer" };
+function renderHistory() {
+  const el = $("#historyBody");
+  if (!history.length) {
+    el.innerHTML = `<div class="empty"><strong>Nothing saved yet</strong>
+      Analyses, rewrites and improved answers you run will be listed here, on this device only. You can switch this off in Settings.</div>`;
+    return;
+  }
+  el.innerHTML = `<div class="panel"><ul class="hist">${history.map(h => {
+    const an = h.analysis;
+    return `<li>
+      <div style="min-width:0">
+        <span class="hist-title">${esc(histTitle(h))}</span>
+        <span class="hist-prev">${esc(h.preview || "(text not stored)")}</span>
+        <div class="hist-meta">
+          <span>${KIND_LABEL[h.kind] || "Entry"}</span>
+          <span>${fmtDate(h.at)}</span>
+          <span>${(h.words || 0).toLocaleString()} words</span>
+          ${h.kind === "analysis" ? `<span class="pill ${h.band}">AI-like ${h.ai} · ${bandShort(h.band)}</span>${an ? `<span>Natural ${an.naturalness}</span><span>Readability ${an.readability}</span>` : ""}` : `<span>${esc(h.style || "")}</span>`}
+          ${h.text ? "" : "<span>text not stored</span>"}
+        </div>
+      </div>
+      <div class="btn-row">
+        ${h.text || h.rewrite ? `<button class="btn btn-sm" data-open="${h.id}">Open</button>` : ""}
+        <button class="btn btn-sm" data-rename="${h.id}">Rename</button>
+        ${h.text || h.rewrite || h.preview ? `<button class="btn btn-sm" data-cp="${h.id}">Copy</button>` : ""}
+        <button class="btn btn-sm btn-quiet" data-del="${h.id}">Delete</button>
+      </div>
+    </li>`; }).join("")}</ul>
+    <div class="btn-row" style="margin-top:1.1rem">
+      <button class="btn btn-sm" id="clearHist2">Clear history</button>
+      <span style="font-size:.82rem;color:var(--ink-3)">${history.length} entr${history.length === 1 ? "y" : "ies"}, stored in this browser and never sent to a server</span>
+    </div></div>`;
+
+  $$("[data-open]").forEach(b => b.onclick = () => {
+    const h = history.find(x => x.id === b.dataset.open);
+    if (!h) return;
+    if (h.kind === "answer") {
+      $("#ansQ").value = h.question || ""; $("#ansA").value = h.text || ""; ansCounts();
+      ans.improve = h.rewrite ? { res: { original: h.text || "", out: h.rewrite, done: true }, notes: null } : null;
+      go("answer"); $("#ansAnalysis").innerHTML = ""; paintImprove(ansGetO, false);
+    } else if (h.kind === "rewrite" && h.rewrite && h.text) {
+      state.paraCtx = null; updateCtxBar();
+      editor.value = h.text; updateCounts();
+      state.rewrite = { original: h.text, out: h.rewrite, done: true, style: curStyle };
+      go("rewriter"); renderCompare();
+    } else {
+      state.paraCtx = null; updateCtxBar();
+      editor.value = h.text || h.rewrite || ""; updateCounts();
+      go("detector"); runAnalysis();
+    }
+  });
+  $$("[data-rename]").forEach(b => b.onclick = async () => {
+    const h = history.find(x => x.id === b.dataset.rename);
+    if (!h) return;
+    const v = await askText("Rename entry", histTitle(h));
+    if (v === null) return;
+    h.title = v || titleFrom(h.preview || h.text || ""); saveHistory(); renderHistory(); toast("Renamed.");
+  });
+  $$("[data-cp]").forEach(b => b.onclick = () => {
+    const h = history.find(x => x.id === b.dataset.cp);
+    if (h) copy(h.rewrite || h.text || h.preview || "", h.rewrite ? "Rewritten text" : "Text");
+  });
+  $$("[data-del]").forEach(b => b.onclick = () => {
+    history = history.filter(x => x.id !== b.dataset.del); saveHistory(); renderHistory();
+  });
+  $("#clearHist2").onclick = clearHistory;
+}
+async function clearHistory() {
+  if (!history.length) return toast("History is already empty.");
+  if (!(await askConfirm("Clear local history?", "Delete all " + history.length + " saved entries? This cannot be undone.", "Delete all"))) return;
+  history = []; saveHistory(); renderHistory(); toast("History cleared.");
+}
+
+/* ============================================================
+   SETTINGS
+   ============================================================ */
+function wireSettings() {
+  $("#setDefStyle").innerHTML = STYLES.map(s => `<option value="${s.id}">${s.name}</option>`).join("");
+  const map = { setSaveHistory: "saveHistory", setStoreText: "storeText", setStoreRewrite: "storeRewrite", setSaveDrafts: "saveDrafts" };
+  Object.entries(map).forEach(([id, key]) => {
+    const el = document.getElementById(id);
+    el.checked = !!settings[key];
+    el.onchange = () => {
+      settings[key] = el.checked; saveSettings();
+      if (key === "saveDrafts") { if (el.checked) saveDrafts(); else { try { localStorage.removeItem(DKEY); } catch (e) { } } }
+    };
+  });
+  $("#setDefStyle").value = settings.defStyle;
+  $("#setDefStyle").onchange = e => { settings.defStyle = e.target.value; curStyle = e.target.value; saveSettings(); renderStyles(); };
+  $("#setDefLang").value = settings.defLang;
+  $("#setDefLang").onchange = e => {
+    settings.defLang = e.target.value; saveSettings();
+    curLang = e.target.value === "same" ? "same" : e.target.value; $("#langSel").value = curLang;
+  };
+  $("#clearHistBtn").onclick = clearHistory;
+  $("#clearDraftsBtn").onclick = clearDrafts;
+  $("#exportBtn").onclick = async () => {
+    if (!history.length) return toast("Nothing to export.");
+    const data = JSON.stringify({ exported: new Date().toISOString(), entries: history }, null, 2);
+    if (dlFn) {
+      try { await dlFn.save({ filename: "humantext-history.json", data }); return toast("Exported."); }
+      catch (e) { if ((e && e.code) === "declined") return toast("Export cancelled."); }
+    }
+    copy(data, "History JSON");
+  };
+}
+
+/* ---------- home specimen ---------- */
+function renderSpecimen(which) {
+  const sp = SPECIMENS[which];
+  const max = 24;
+  $("#specBars").innerHTML = sp.s.map(([, n]) => `<div class="rbar"><em>${n}</em><i style="width:${Math.max(3, n / max * 100)}%"></i></div>`).join("");
+  $("#specText").textContent = sp.s.map(x => x[0]).join(" ");
+  $("#specCaption").textContent = sp.caption;
+  $$("[data-spec]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.spec === which)));
+}
+$$("[data-spec]").forEach(b => b.onclick = () => renderSpecimen(b.dataset.spec));
+
+/* ---------- init ---------- */
+load();
+applyTheme();
+curStyle = settings.defStyle; curLang = settings.defLang;
+restoreDrafts();
+renderStyles();
+$("#langSel").value = curLang;
+syncRefStyle();
+wireSettings();
+renderSpecimen("even");
+updateCounts();
+ansCounts();
+renderDetector();
+renderCompare();
+renderCoach();
+go("home");
+booted = true;
+</script>
+</body>
+</html>

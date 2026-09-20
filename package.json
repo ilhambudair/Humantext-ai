@@ -1,0 +1,18 @@
+{
+  "name": "humantext-ai",
+  "version": "2.0.0",
+  "description": "HumanText AI — an AI writing assistant for analyzing, improving and personalizing your writing. Static frontend + one serverless AI proxy, ready for Vercel.",
+  "private": true,
+  "type": "module",
+  "license": "UNLICENSED",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "dev": "node scripts/dev-server.mjs",
+    "dev:mock": "node scripts/dev-server.mjs --mock",
+    "start": "node scripts/dev-server.mjs",
+    "check": "node scripts/check.mjs",
+    "test": "node --test tests/api.test.mjs",
+    "vercel:dev": "npx vercel dev",
+    "deploy": "npx vercel --prod"
+  }
+}
